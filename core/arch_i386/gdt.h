@@ -15,3 +15,5 @@ struct gdt_descriptor {
     uint8_t fl_lh;
     uint8_t base_high;
 };
+
+void gdt_install();
