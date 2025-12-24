@@ -30,6 +30,6 @@ header_start:
     dw 0    ; Flags: 0
     dd 8    ; Size: 8
 header_end:
-_start:
+start:
     extern start_kernel
     call start_kernel
