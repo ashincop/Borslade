@@ -26,6 +26,24 @@ void idt_set_gate(uint8_t index, uint64_t offset, uint8_t attr, uint16_t selecto
     entry.zero = 0;
     idt[index] = entry;
 }
+struct Registers {
+    uint64_t rax;
+    uint64_t rbx;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rbp;
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t rflags;
+    uint64_t rsp;
+    uint64_t ss;
+};
 static inline void outb(uint16_t port, uint8_t val) {
     asm volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
 }
@@ -67,12 +85,71 @@ void kprint_serial(const char* str) {
         write_serial(str[i]);
     }
 }
-void idtc() {
-    kprintf("Early boot error encountered. Please seek help from Strawberry Care.\n");
-    for(;;);
+void idtc(uint64_t *stack_anchor) {
+    asm volatile("cli");
+    uint64_t rax = *stack_anchor;
+    uint64_t rbx = stack_anchor[1];
+    uint64_t rcx = stack_anchor[2];
+    uint64_t rdx = stack_anchor[3];
+    uint64_t rbp = stack_anchor[4];
+    uint64_t rdi = stack_anchor[5];
+    uint64_t rsi = stack_anchor[6];
+    uint64_t r8 = stack_anchor[7];
+    uint64_t r9 = stack_anchor[8];
+    uint64_t r10 = stack_anchor[9];
+    uint64_t r11 = stack_anchor[10];
+    uint64_t rip = stack_anchor[11];
+    uint64_t cs = stack_anchor[12];
+    uint64_t rflags = stack_anchor[13];
+    uint64_t rsp = stack_anchor[14];
+    uint64_t ss = stack_anchor[15];
+
+    clear_screen(0x0000FF);
+    kprintf("\npanic(exception)\n");
+    
+    // 1. Check the Registers we pushed
+    kprintf("RAX: %x  RBX: %x  RCX: %x\n", rax, rbx, rcx);
+    kprintf("RDI: %x  RSI: %x\n", rdi, rsi);
+
+
+    // 3. Check the Trap Frame (The "Ticket" back to Ring 3)
+    // If these look like memory addresses instead of 0x1B/0x23, your struct is wrong!
+    kprintf("RIP:        %x\n", rip);
+    kprintf("CS:         %x\n", cs);
+    kprintf("RFLAGS:     %x\n", rflags);
+    kprintf("RSP:        %x\n", rsp);
+    kprintf("SS:         %x\n", ss);
+
+    // 4. Verify Stack Alignment
+    // If (RIP address - RAX address) != 88, your C struct and ASM pushes don't match.
+    uint64_t offset = (uint64_t)&rip - (uint64_t)&rax;
+    kprintf("STRUCT OFFSET: %d bytes\n", (int)offset);
+
+    kprintf("------------------------------------------\n");
+    
 }
-void idtcs() {
-    kprintf("Say hi to the camera\n");
+void idtcs(uint64_t *stack_anchor) {
+    uint64_t rax = *stack_anchor;
+    uint64_t rbx = stack_anchor[1];
+    uint64_t rcx = stack_anchor[2];
+    uint64_t rdx = stack_anchor[3];
+    uint64_t rbp = stack_anchor[4];
+    uint64_t rdi = stack_anchor[5];
+    uint64_t rsi = stack_anchor[6];
+    uint64_t r8 = stack_anchor[7];
+    uint64_t r9 = stack_anchor[8];
+    uint64_t r10 = stack_anchor[9];
+    uint64_t r11 = stack_anchor[10];
+    uint64_t rip = stack_anchor[11];
+    uint64_t cs = stack_anchor[12];
+    uint64_t rflags = stack_anchor[13];
+    uint64_t rsp = stack_anchor[14];
+    uint64_t ss = stack_anchor[15];
+    if (rax == 0) {
+        kprintf("[com.strawberry.core.userland] %s", (char*)rbx);
+    } else if (rax == 1) {
+        clear_screen((uint32_t)rbx);
+    }
 }
 extern void idtstub();
 extern void idtstubs();

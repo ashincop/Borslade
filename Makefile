@@ -5,7 +5,7 @@ LD = x86_64-elf-ld
 GRUB_MKRESCUE = x86_64-elf-grub-mkrescue
 
 # --- Flags ---
-CFLAGS = -Wall -Wextra -ffreestanding -O2 -mno-red-zone -m64 -Isrc/include
+CFLAGS = -Wall -Wextra -ffreestanding -O2 -w -mno-red-zone -m64 -fno-pic -mcmodel=large -Isrc/include
 ASFLAGS = -f elf64
 LDFLAGS = -n -T linker.ld
 
@@ -83,7 +83,6 @@ run: $(BUILD_DIR)/boot.iso
 		-drive if=pflash,format=raw,unit=0,file=/usr/local/share/qemu/edk2-x86_64-code.fd,readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd \
 		-cdrom $(BUILD_DIR)/boot.iso \
-		-serial stdio \
 		-vga std \
 		-display cocoa,show-cursor=on \
 		-monitor none

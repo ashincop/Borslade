@@ -1,39 +1,30 @@
-ENTRY(start)                /* The name of your entry point in boot.asm */
+ENTRY(start)
 
 SECTIONS
 {
-    /* The bootloader will load the kernel at 1MiB physical address */
-    . = 1M;
+    . = 1M; /* Start at 1 MiB */
 
-    /* Multiboot Header MUST be at the beginning of the file */
-    .boot : {
-        KEEP(*(.multiboot_header))
-    }
-
-    /* Executable Code */
-    .text : {
+    .text : ALIGN(4K)
+    {
+        *(.multiboot_header)
         *(.text)
     }
 
-    /* Read-only data (constants, strings, your GDT) */
-    .rodata : {
-        *(.rodata)
+    .rodata : ALIGN(4K)
+    {
+        *(.rodata*)
     }
 
-    /* Initialized data */
-    .data : {
+    .data : ALIGN(4K)
+    {
         *(.data)
     }
 
-    /* Uninitialized data (Stack, BSS) */
-    .bss : {
+    .bss : ALIGN(4K)
+    {
         *(COMMON)
         *(.bss)
     }
-
-    /* Optional: Remove unnecessary sections that could break the header placement */
-    /DISCARD/ : {
-        *(.fini_array*)
-        *(.comment)
-    }
+    
+    /DISCARD/ : { *(.comment) *(.eh_frame) }
 }
