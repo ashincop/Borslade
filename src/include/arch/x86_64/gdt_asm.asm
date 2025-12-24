@@ -1,5 +1,10 @@
 [bits 64]
 global load_gdt
+global flush_tss
+flush_tss:
+    mov ax, 0x28      ; Assuming TSS is at offset 40 (index 5 * 8)
+    ltr ax            ; Load Task Register
+    ret
 load_gdt:
     lgdt [rdi]        ; Load the GDT pointer from the address in RDI
     
@@ -20,3 +25,31 @@ load_gdt:
 
 .reload_cs:
     ret
+global jump_to_user
+jump_to_user:
+    ; Save the target address and stack in registers
+    ; rdi = function to run, rsi = user stack top
+    mov rbx, rdi 
+    mov rax, rsi
+
+    ; Clean up segment registers
+    mov cx, 0x23
+    mov ds, cx
+    mov es, cx
+    mov fs, cx
+    mov gs, cx
+
+    ; Prepare the fake stack frame
+    push 0x23           ; SS
+    push rax            ; RSP
+    
+    pushfq              ; RFLAGS
+    pop rax
+    or rax, 0x200       ; Enable Interrupts (Bit 9)
+    push rax
+    
+    push 0x1B           ; CS
+    push rbx            ; RIP
+
+    ; The Point of No Return
+    iretq

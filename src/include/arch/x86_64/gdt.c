@@ -1,5 +1,14 @@
 #include "gdt.h"
-struct gdt_descriptor gdt[3];
+struct gdt_descriptor gdt[7];
+struct tss_entry my_tss; // Global TSS instance
+typedef unsigned long long size_t;
+void *memset(void *ptr, int value, size_t num) {
+    unsigned char *p = (unsigned char *)ptr;
+    while (num--) {
+        *p++ = (unsigned char)value;
+    }
+    return ptr;
+}
 uint8_t combine_limit_flags(uint8_t flags, uint8_t limit_high) {
     // Ensure flags are in the high 4 bits and limit_high is in the low 4 bits
     return (flags << 4) | (limit_high & 0x0F);
@@ -20,6 +29,46 @@ void split_limit_20(uint32_t limit, uint16_t *low, uint8_t *high) {
     // Extract the upper 4 bits (16-19)
     *high = (uint8_t)((limit >> 16) & 0x0F);
 }
+void gdt_set_tss_gate(int index, uint64_t base, uint32_t limit) {
+    // We cast the GDT pointer to your 16-byte struct
+    // Warning: 'index' here refers to the GDT entry number. 
+    // Since this is 16 bytes, it will overwrite gdt[index] and gdt[index+1].
+    struct tss_descriptor *gate = (struct tss_descriptor *)&gdt[index];
+
+    // 1. Set the Limit (usually sizeof(tss) - 1)
+    gate->limit_low = (uint16_t)(limit & 0xFFFF);
+    
+    // 2. Set the Base Address (Split into 4 parts)
+    gate->base_low         = (uint16_t)(base & 0xFFFF);
+    gate->base_middle_low  = (uint8_t)((base >> 16) & 0xFF);
+    gate->base_middle_high = (uint8_t)((base >> 24) & 0xFF);
+    gate->base_high        = (uint32_t)(base >> 32);
+
+    // 3. The Access Byte (0x89)
+    // 0x89 = 10001001b (Present, DPL 0, System, Type: 64-bit TSS available)
+    gate->access_byte = 0x89;
+
+    // 4. Flags and Limit High
+    // 0x40 = 01000000b (Available bit set, Limit bits 16-19 are 0)
+    gate->lh_flags = (uint8_t)((limit >> 16) & 0x0F);
+    gate->lh_flags |= 0x40; 
+
+    // 5. Clean up reserved
+    gate->reserved = 0;
+}
+// Create a separate stack for the kernel to use when we're interrupted in User Mode
+uint8_t kernel_stack[8192]; 
+
+void init_tss() {
+    memset(&my_tss, 0, sizeof(my_tss));
+    
+    // rsp0 is where the CPU jumps when an interrupt happens in Ring 3.
+    // We point it to the TOP of our kernel_stack array.
+    my_tss.rsp0 = (uint64_t)&kernel_stack[8192];
+    
+    // Some CPUs require the IOPB to point beyond the TSS limit
+    my_tss.iopb_offset = sizeof(my_tss);
+}
 extern void load_gdt(struct gdtr* gdt);
 void gdt_set_gate(uint8_t index, uint32_t base, uint32_t size, uint8_t access_byte, uint8_t flags) {
     uint16_t limit_low;
@@ -39,12 +88,19 @@ void gdt_set_gate(uint8_t index, uint32_t base, uint32_t size, uint8_t access_by
     entry.access_byte = access_byte;
     gdt[index] = entry;
 }
+extern void flush_tss();
 void install_gdt() {
     gdt_set_gate(0,0,0,0,0);
     gdt_set_gate(1,0,0,0x9B,0xA);
     gdt_set_gate(2,0,0,0x93,0xA);
+    gdt_set_gate(3,0,0,0xFB,0xA);
+    gdt_set_gate(4,0,0,0xF3,0xA);
+    // Correct way to call it in install_gdt:
+gdt_set_tss_gate(5, (uint64_t)&my_tss, sizeof(my_tss) - 1);
     struct gdtr gdtp;
     gdtp.offset = (uint64_t)&gdt;
     gdtp.size = sizeof(gdt)-1;
     load_gdt(&gdtp);
+    init_tss();
+    flush_tss();
 }
