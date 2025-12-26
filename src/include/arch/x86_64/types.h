@@ -62,3 +62,47 @@ struct tss_descriptor {
     uint32_t base_high;
     uint32_t reserved;
 } __attribute__((packed));
+typedef struct task {
+    void* stack_ptr;        // Offset 0: Saved RSP
+    uint64_t cr3;           // Offset 8: Page Table base
+    struct task* next;      // Offset 16: Next in list
+    int id;                 // Offset 24: Debug ID
+    uint64_t kernel_stack_top; // Offset 32: Landing pad for Ring 3 -> Ring 0
+    char* name;
+    
+} task_t __attribute__((packed));
+typedef struct malloc_header {
+    uint32_t magic;
+    uint64_t size;
+    int is_free;
+    struct malloc_header* next;
+} malloc_header_t;
+typedef enum { VFS_FILE, VFS_DIRECTORY, VFS_DEVICE, VFS_PIPE } vnode_type_t;
+
+struct vnode {
+    vnode_type_t type;
+    uint32_t size;
+    void* private_data; // Points to the actual FS (e.g., TarFS or Ext2)
+    struct vfs_entry* ops; // Function pointers for read/write
+};
+
+struct vfs_entry {
+    int (*read)(struct vnode* node, uint32_t offset, uint32_t size, uint8_t* buffer);
+    int (*write)(struct vnode* node, uint32_t offset, uint32_t size, uint8_t* buffer);
+    // Add open, close, readdir later
+};
+struct vfs_node {
+    char name[128];
+    struct vnode* vnode;
+    struct vfs_node* parent;
+    struct vfs_node* children; // Pointer to first child
+    struct vfs_node* next;     // Pointer to sibling
+};
+
+struct mb2_tag_module {
+    uint32_t type;
+    uint32_t size;
+    uint32_t mod_start;
+    uint32_t mod_end;
+    char string[]; // Name of the module (e.g., "initrd.img")
+};

@@ -1,0 +1,20 @@
+## A microkernel designed to power blurOS
+
+Syscall docs:
+
+To initiate a system call, they take 3 max arguments in rbx, rcx, and rdx. The syscall handler is 0x30 (48), the steps to initiate are:
+
+1. Set RAX to the target syscall
+2. Set RBX, RCX, RDX to your arguments (sometimes not all or none or all are needed)
+3. Use the int $0x30 instruction
+
+Current System Call Signatures (form of RAX(args))
+- 0(char* rbx) / printf(char* string)
+
+- 1(uint32_t rbx) / clear_screen(uint32_t color)
+
+- 2(char* rbx) / kscan(char* buf)
+
+- 3(void (*)() rbx, int rcx, char *rdx) / create_proc(void (*)() func, int pid, char* pname)
+
+- 4(uint64_t rbx) / sleep(uint64_t ms)

@@ -1,4 +1,5 @@
 #include "fb.h"
+#include <stddef.h>
 struct multiboot_tag_framebuffer *fb;
 
 void draw_rect(int x, int y, int width, int height, uint32_t color) {
@@ -153,6 +154,38 @@ void draw_rect(int x, int y, int width, int height, uint32_t color) {
 int tx = 10; 
 int ty = 10;
 uint32_t fg_color = 0xFFFFFFFF; // White
+extern void* memcpy(void* dest, const void* src, size_t n);
+extern void* memmove(void* dest, const void* src, size_t n);
+extern void* memset(void* s, int c, size_t n);
+void scroll_up() {
+    // USE THE HARDWARE PITCH - DO NOT CALCULATE IT MANUALLY
+    uint32_t pitch = fb->pitch; 
+    uint8_t* fb_ptr = (uint8_t*)fb->addr;
+    
+    // We want to move rows 16-719 up to 0-703
+    uint32_t rows_to_copy = 720 - 16;
+    size_t bytes_to_copy = (size_t)rows_to_copy * pitch;
+    size_t offset_bytes = (size_t)16 * pitch;
+
+    // 1. FORWARD COPY: Because dest < src, forward copy is safe and won't corrupt.
+    // We use a simple loop or a forward-only memcpy to be 100% sure.
+    uint64_t* dest = (uint64_t*)fb_ptr;
+    uint64_t* src  = (uint64_t*)(fb_ptr + offset_bytes);
+    
+    // Move memory in 8-byte chunks for speed and stability
+    for (size_t i = 0; i < (bytes_to_copy / 8); i++) {
+        dest[i] = src[i];
+    }
+
+    // 2. CLEAR THE BOTTOM: Use the same pitch to ensure no "trailing" artifacts
+    uint64_t* bottom = (uint64_t*)(fb_ptr + bytes_to_copy);
+    for (size_t i = 0; i < (offset_bytes / 8); i++) {
+        bottom[i] = 0;
+    }
+
+    // 3. Update cursor
+    ty = 720 - 16;
+}
 void draw_char(char c, int x, int y, uint32_t fg) {
     // 1. Map the char to the font array (cast to unsigned to avoid negative indices)
     // font8x16[char_index] gives us the 16 bytes for that character
@@ -185,18 +218,28 @@ void draw_char(char c, int x, int y, uint32_t fg) {
 // Helper to print a string at current tx, ty
 void kprint_s(const char* s) {
     for (int i = 0; s[i] != '\0'; i++) {
+        // 1. Handle Newline
         if (s[i] == '\n') {
             tx = 10;
             ty += 16;
+            
+            if (ty >= 720) scroll_up(); // Check scroll here
             continue;
         }
+
+        // 2. Handle Wrapping
+        if (tx > 1200) { // Using 1200 as a safe right margin
+            tx = 10;
+            ty += 16;
+            
+            if (ty >= 720) scroll_up(); // Check scroll here
+        }
+
+        // 3. Draw the character
         draw_char(s[i], tx, ty, fg_color);
         tx += 8;
-        // Simple wrap
-        if (tx > 800) { tx = 10; ty += 16; }
     }
 }
-
 // Helper to convert int/hex to string
 void kprint_n(uint64_t n, int base) {
     char buf[64];
@@ -228,6 +271,9 @@ void clear_screen(uint32_t color) {
     tx = 10;
     ty = 10;
 }
+int screen_width = 1280;   // your framebuffer width
+int screen_height = 720;  // your framebuffer height
+
 void kprintf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -238,20 +284,23 @@ void kprintf(const char* fmt, ...) {
             kprint_s(s);
             continue;
         }
-
+        if (ty == 720 || ty > 720) {
+            scroll_up();
+        }
         p++; // Skip '%'
         switch (*p) {
-            case 's': kprint_s(va_arg(args, char*)); break;
-            case 'd': kprint_n(va_arg(args, uint64_t), 10); break;
-            case 'x': kprint_s("0x"); kprint_n(va_arg(args, uint64_t), 16); break;
-            case 'c': {
-                char s[2] = {(char)va_arg(args, int), 0};
-                kprint_s(s);
-                break;
-            }
-            case 'f': // "Focusing on F" - Floating point is tricky in kernels
-                kprint_s("[FLOAT_NOT_IMPL]"); 
-                break;
+            case 'p': 
+    kprint_s("0x"); 
+    kprint_n((uint64_t)va_arg(args, void*), 16); 
+    break;
+case 's': kprint_s(va_arg(args, char*)); break;
+case 'd': kprint_n(va_arg(args, uint64_t), 10); break;
+case 'x': kprint_s("0x"); kprint_n(va_arg(args, uint64_t), 16); break;
+case 'c': {
+    char s[2] = {(char)va_arg(args, int), 0};
+    kprint_s(s);
+    break;
+}
             default: kprint_s("?"); break;
         }
     }

@@ -29,6 +29,11 @@ void split_limit_20(uint32_t limit, uint16_t *low, uint8_t *high) {
     // Extract the upper 4 bits (16-19)
     *high = (uint8_t)((limit >> 16) & 0x0F);
 }
+void update_tss_rsp0(uint64_t new_rsp) {
+    // In a 64-bit TSS, rsp0 starts at byte 4 and is 8 bytes long.
+    // Since my_tss is a global instance, we just overwrite that field.
+    my_tss.rsp0 = new_rsp;
+}
 void gdt_set_tss_gate(int index, uint64_t base, uint32_t limit) {
     // We cast the GDT pointer to your 16-byte struct
     // Warning: 'index' here refers to the GDT entry number. 

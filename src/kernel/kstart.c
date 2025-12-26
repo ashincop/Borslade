@@ -1,39 +1,51 @@
 #include <arch/x86_64/gdt.h>
 #include <arch/x86_64/idt.h>
+#include <arch/x86_64/multi.h>
+#include <arch/x86_64/alloc.h>
 #include <drivers/screen/fb.h>
 #include <drivers/keyboard/keyboard.h>
-uint8_t user_stack[(4096*9)];
-extern void jump_to_user(uint64_t addr, uint64_t top);
-// Define this globally so it has a fixed address in .rodata
-const char* test_msg = "r3 initialized.\n";
-char buf[32];
-void ring3() {
-    
-    const char* prompt = "\nEnter something: ";
+#include <drivers/storage/vfs/vfs.h>
+void enable_sse() {
+    uint64_t cr0;
+    asm volatile("mov %%cr0, %0" : "=r"(cr0));
+    cr0 &= ~(1 << 2); // Clear EM (Coprocessor Emulation)
+    cr0 |= (1 << 1);  // Set MP (Monitor Coprocessor)
+    asm volatile("mov %0, %%cr0" : : "r"(cr0));
 
-    // 1. Clear Screen (RAX=1)
-    asm volatile("int $0x30" : : "a"(1), "b"(0x0000FF));
-
-    // 2. Print Prompt (RAX=0)
-    asm volatile("int $0x30" : : "a"(0), "b"(prompt));
-
-    // 3. Get Input (RAX=2)
-    // This will block until you hit Enter
-    asm volatile("int $0x30" : : "a"(2), "b"(buf) : "memory");
-
-    // 4. Print the Result (RAX=0)
-    // We pass 'buf' back to the kernel to prove it was filled
-    asm volatile("int $0x30" : : "a"(0), "b"(buf));
-
-    for(;;);
+    uint64_t cr4;
+    asm volatile("mov %%cr4, %0" : "=r"(cr4));
+    cr4 |= (1 << 9);  // Set OSFXSR (FXSAVE/FXRSTOR support)
+    cr4 |= (1 << 10); // Set OSXMMEXCPT (SIMD Exception support)
+    asm volatile("mov %0, %%cr4" : : "r"(cr4));
 }
+uint8_t user_stack[(4096*9)];
+uint64_t probe_memory_size() {
+    uint64_t last_accessible_addr = 0;
+    // Start probing every 1MB starting after the kernel
+    for (uint64_t addr = 0x1000000; addr < 0xFFFFFFFF; addr += 0x100000) {
+        volatile uint64_t* ptr = (uint64_t*)addr;
+        uint64_t backup = *ptr;
+        *ptr = 0xDEADBEEF;
+        if (*ptr == 0xDEADBEEF) {
+            *ptr = backup;
+            last_accessible_addr = addr;
+        } else {
+            break;
+        }
+    }
+    return last_accessible_addr;
+}
+
 void start_kernel(uint64_t mbi_addr) {
     install_gdt();
     idt_install();
     char buf[32];
+    init_alloc(0x20000000, mbi_addr);
     init_gop(mbi_addr);
-    kprintf("KM: ");
-    kscan(buf);
-    jump_to_user((uint64_t)ring3, (uint64_t)&user_stack);
+    enable_sse();
+    init_vfs(mbi_addr);
+    __asm__ volatile ("cli");
+    init_multitasking();
+    __asm__ volatile ("sti");
     for(;;);
 }

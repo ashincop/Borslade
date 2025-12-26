@@ -13,7 +13,7 @@ LDFLAGS = -n -T linker.ld
 BUILD_DIR = build
 ISO_DIR = $(BUILD_DIR)/iso
 SRC_DIR = src
-OBJ = $(BUILD_DIR)/boot.o $(BUILD_DIR)/gdt_asm.o $(BUILD_DIR)/gdt.o $(BUILD_DIR)/kstart.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/idt_asm.o $(BUILD_DIR)/fb.o $(BUILD_DIR)/keyboard.o
+OBJ = $(BUILD_DIR)/boot.o $(BUILD_DIR)/gdt_asm.o $(BUILD_DIR)/gdt.o $(BUILD_DIR)/kstart.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/idt_asm.o $(BUILD_DIR)/fb.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/multi_asm.o $(BUILD_DIR)/multi.o $(BUILD_DIR)/alloc.o $(BUILD_DIR)/vfs.o $(BUILD_DIR)/elf.o
 
 # --- Targets ---
 all: $(BUILD_DIR)/boot.iso
@@ -26,19 +26,11 @@ $(BUILD_DIR)/kernel.bin: $(OBJ)
 $(BUILD_DIR)/boot.iso: $(BUILD_DIR)/kernel.bin
 	@mkdir -p $(ISO_DIR)/boot/grub
 	cp $(BUILD_DIR)/kernel.bin $(ISO_DIR)/boot/kernel.bin
-	@# Generate grub.cfg to fix the "no suitable video mode" error
-	@echo 'set timeout=0' > $(ISO_DIR)/boot/grub/grub.cfg
-	@echo 'set default=0' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo 'insmod all_video' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo 'if loadfont unicode; then' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo '  set gfxmode=auto' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo '  terminal_output gfxterm' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo 'fi' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo 'set gfxpayload=keep' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo 'menuentry "BorsladeOS" {' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo '  multiboot2 /boot/kernel.bin' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo '  boot' >> $(ISO_DIR)/boot/grub/grub.cfg
-	@echo '}' >> $(ISO_DIR)/boot/grub/grub.cfg
+	cp ./grub.cfg $(ISO_DIR)/boot/grub
+	$(CC) -fPIC -ffreestanding -fno-stack-protector -nostdlib -c hi.c -o main.o
+	$(AS) -f elf64 hi.asm -o entry.o
+	$(LD) -Ttext 0x0 --oformat binary entry.o main.o -o initrd/System/proc/sys1.bin
+	cd initrd && find . | cpio -o -H newc > ../build/iso/boot/initrd.img
 	unset TMPDIR; $(GRUB_MKRESCUE) -o $(BUILD_DIR)/boot.iso $(ISO_DIR)
 
 # --- Compilation Rules ---
@@ -54,11 +46,23 @@ $(BUILD_DIR)/idt_asm.o: src/include/arch/x86_64/idt_asm.asm
 	@mkdir -p $(BUILD_DIR)
 	$(AS) $(ASFLAGS) $< -o $@
 
+$(BUILD_DIR)/multi_asm.o: src/include/arch/x86_64/multi_asm.asm
+	@mkdir -p $(BUILD_DIR)
+	$(AS) $(ASFLAGS) $< -o $@
+
 $(BUILD_DIR)/gdt.o: src/include/arch/x86_64/gdt.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/idt.o: src/include/arch/x86_64/idt.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/multi.o: src/include/arch/x86_64/multi.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/alloc.o: src/include/arch/x86_64/alloc.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -74,6 +78,14 @@ $(BUILD_DIR)/fb.o: src/include/drivers/screen/fb.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/elf.o: src/include/drivers/elf/elf.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/vfs.o: src/include/drivers/storage/vfs/vfs.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+	
 $(BUILD_DIR)/keyboard.o: src/include/drivers/keyboard/keyboard.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -83,7 +95,7 @@ run: $(BUILD_DIR)/boot.iso
 	unset TMPDIR; qemu-system-x86_64 \
 		-machine q35,accel=hvf \
 		-cpu host \
-		-m 1G \
+		-m 8G \
 		-drive if=pflash,format=raw,unit=0,file=/usr/local/share/qemu/edk2-x86_64-code.fd,readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd \
 		-cdrom $(BUILD_DIR)/boot.iso \
