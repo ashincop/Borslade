@@ -13,7 +13,7 @@ LDFLAGS = -n -T linker.ld
 BUILD_DIR = build
 ISO_DIR = $(BUILD_DIR)/iso
 SRC_DIR = src
-OBJ = $(BUILD_DIR)/boot.o $(BUILD_DIR)/gdt_asm.o $(BUILD_DIR)/gdt.o $(BUILD_DIR)/kstart.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/idt_asm.o $(BUILD_DIR)/fb.o
+OBJ = $(BUILD_DIR)/boot.o $(BUILD_DIR)/gdt_asm.o $(BUILD_DIR)/gdt.o $(BUILD_DIR)/kstart.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/idt_asm.o $(BUILD_DIR)/fb.o $(BUILD_DIR)/keyboard.o
 
 # --- Targets ---
 all: $(BUILD_DIR)/boot.iso
@@ -71,6 +71,10 @@ $(BUILD_DIR)/boot.o: src/boot/boot.asm
 	$(AS) $(ASFLAGS) $< -o $@
 
 $(BUILD_DIR)/fb.o: src/include/drivers/screen/fb.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/keyboard.o: src/include/drivers/keyboard/keyboard.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 # Launch QEMU (The macOS-safe version)

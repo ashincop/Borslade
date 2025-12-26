@@ -160,3 +160,67 @@ irq0:
     pop r11
     call send_eoi
     iretq           ; CPU pops RIP, CS, RFLAGS, RSP, SS
+global irq1
+extern irq1c
+irq1:
+    push r11
+    push r10
+    push r9
+    push r8
+    push rsi
+    push rdi
+    push rbp
+    push rdx
+    push rcx
+    push rbx
+    push rax
+    mov rbp, rsp
+    mov rdi, rbp    ; Pointer to the struct
+    
+    call irq1c
+
+    pop rax
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rbp
+    pop rdi
+    pop rsi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    call send_eoi
+    iretq           ; CPU pops RIP, CS, RFLAGS, RSP, SS
+global irq12
+extern irq12c
+irq12:
+    push r11
+    push r10
+    push r9
+    push r8
+    push rsi
+    push rdi
+    push rbp
+    push rdx
+    push rcx
+    push rbx
+    push rax
+    mov rbp, rsp
+    mov rdi, rbp    ; Pointer to the struct
+    
+    call irq12c
+
+    pop rax
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rbp
+    pop rdi
+    pop rsi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    call send_eoi
+    iretq           ; CPU pops RIP, CS, RFLAGS, RSP, SS

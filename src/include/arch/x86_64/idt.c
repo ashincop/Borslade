@@ -1,5 +1,6 @@
 #include "idt.h"
 #include <drivers/screen/fb.h>
+#include <drivers/keyboard/keyboard.h>
 struct InterruptDescriptor64 idt[256];
 void split_64_to_16_16_32(uint64_t input, uint16_t *low, uint16_t *mid, uint32_t *high) {
     // Extract bottom 16 bits (0-15)
@@ -149,17 +150,42 @@ void idtcs(uint64_t *stack_anchor) {
         kprintf("[com.strawberry.core.userland] %s", (char*)rbx);
     } else if (rax == 1) {
         clear_screen((uint32_t)rbx);
+    } else if (rax == 2) {
+        kprintf("[com.strawberry.core.interrupts] RAX=2.\n");
+        asm volatile("sti");
+        kscan((char *)rbx);
+        asm volatile("cli");
     }
+}
+void irq0c(uint64_t *stack_anchor) {
+
+}
+void irq1c(uint64_t *stack_anchor) {
+    keyboard_handler(stack_anchor);
+}
+void irq12c(uint64_t *stack_anchor) {
+
 }
 extern void idtstub();
 extern void idtstubs();
+extern void irq0();
+extern void irq1();
+extern void irq12();
+extern void pic_remap();
 void idt_install() {
+    __asm__ volatile ("cli");
     for (uint8_t i=0; i<31; i++) {
-        idt_set_gate(i,(uint64_t)&idtstub, 0x8E, 0x08);
+        idt_set_gate(i,(uint64_t)&idtstub, 0xEE, 0x08);
     }
     idt_set_gate(48, (uint64_t)&idtstubs, 0xEE, 0x08);
+    idt_set_gate(32, (uint64_t)irq0, 0xEE, 0x08);
+    idt_set_gate(33, (uint64_t)irq1, 0xEE, 0x08);
+    idt_set_gate(44, (uint64_t)irq12, 0xEE, 0x08);
     struct idtr idtp;
     idtp.offset = (uint64_t)&idt;
     idtp.size = sizeof(idt)-1;
+    pic_remap();
+    keyboard_init();
     __asm__ volatile ("lidt %0" : : "m"(idtp));
+    __asm__ volatile ("sti");
 }
