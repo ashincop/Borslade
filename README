@@ -1,4 +1,4 @@
-## A microkernel designed to power blurOS
+## A monolithic kernel designed to power blurOS
 
 Syscall docs:
 
@@ -7,14 +7,34 @@ To initiate a system call, they take 3 max arguments in rbx, rcx, and rdx. The s
 1. Set RAX to the target syscall
 2. Set RBX, RCX, RDX to your arguments (sometimes not all or none or all are needed)
 3. Use the int $0x30 instruction
+4. Set your variable to RAX if it isn't listed as void after the interrupt
 
-Current System Call Signatures (form of RAX(args))
-- 0(char* rbx) / printf(char* string)
+Current System Call Signatures (copy/direct form of returntype RAX(args))
+- 0(char* rbx) / direct void printf(char* string)
 
-- 1(uint32_t rbx) / clear_screen(uint32_t color)
+- 1(uint32_t rbx) / direct void clear_screen(uint32_t color)
 
-- 2(char* rbx) / kscan(char* buf)
+- 2(char* rbx) / copy char* kscan(char* buf)
 
-- 3(void (*)() rbx, int rcx, char *rdx) / create_proc(void (*)() func, int pid, char* pname)
+- 3(void (*)() rbx, int rcx, char *rdx) / direct void create_proc(void (*)() func, int pid, char* pname)
 
-- 4(uint64_t rbx) / sleep(uint64_t ms)
+Warning: sleep is NOT_IMPL due to hang
+
+- 4(uint64_t rbx) / direct void sleep(uint64_t ms)
+
+- 5() / direct void print_currently_running_proc()
+
+- 6(char* rbx, void* rcx, uint32_t rdx) / copy void* hr_read(char* filename, void* buffer, uint32_t size)
+
+- 7(uint64_t rbx) / copy void* alloc(uint64_t size)
+
+- 8(char* rbx) / direct int open(char* filename)
+
+- 9(int rbx, char* rcx, uint32_t rdx) / direct int read(int fd, char* buf, uint32_t len)
+
+- 10(int rbx) / direct int close(int fd)
+
+- 11(int rbx, int rcx, int rdx) / direct int lseek(int fd, int offset, int whence)
+
+- 12(char* rbx) / direct int vfs_get_filesize(char* name)
+
