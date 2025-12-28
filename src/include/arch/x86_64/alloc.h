@@ -6,3 +6,6 @@ void* pmm_alloc_page();
 void kfree(void* ptr);
 void pmm_mark_used(uint64_t addr);
 void pmm_mark_used64(uint64_t addr);
+void* pmm_alloc_pages(uint64_t count);
+// Debug helper: log page range for an address + byte length, dump nearby bitmap and memory
+void pmm_debug_range(uint64_t addr, uint64_t bytes);

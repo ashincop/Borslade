@@ -186,31 +186,26 @@ void irq12c(uint64_t *stack_anchor) {
 
 }
 void idtcs(uint64_t *stack_anchor) {
-    uint64_t rax     = stack_anchor[ 0];
-    uint64_t rbx     = stack_anchor[ 1];
-    uint64_t rcx     = stack_anchor[ 2];
-    uint64_t rdx     = stack_anchor[ 3];
-    uint64_t rbp_    = stack_anchor[ 4];
-    uint64_t rdi     = stack_anchor[ 5];
-    uint64_t rsi     = stack_anchor[ 6];
-    uint64_t r8      = stack_anchor[ 7];
-    uint64_t r9      = stack_anchor[ 8];
-    uint64_t r10     = stack_anchor[ 9];
+    // Registers pushed by idtstubs (in this order):
+    // rax, rbx, rcx, rdx, rbp, rdi, rsi, r8, r9, r10, r11
+    uint64_t rax     = stack_anchor[0];
+    uint64_t rbx     = stack_anchor[1];
+    uint64_t rcx     = stack_anchor[2];
+    uint64_t rdx     = stack_anchor[3];
+    uint64_t rbp_    = stack_anchor[4];
+    uint64_t rdi     = stack_anchor[5];
+    uint64_t rsi     = stack_anchor[6];
+    uint64_t r8      = stack_anchor[7];
+    uint64_t r9      = stack_anchor[8];
+    uint64_t r10     = stack_anchor[9];
     uint64_t r11     = stack_anchor[10];
-    uint64_t r12     = stack_anchor[11];
-    uint64_t r13     = stack_anchor[12];
-    uint64_t r14     = stack_anchor[13];
-    uint64_t r15     = stack_anchor[14];
 
-    // Hardware frame (offsets 120-152 = indices 15-19)
-    uint64_t rip     = stack_anchor[15];
-    uint64_t cs      = stack_anchor[16];
-    uint64_t rflags  = stack_anchor[17];
-    uint64_t rsp     = stack_anchor[18];
-    uint64_t ss      = stack_anchor[19];
-
-    // ISR frame (offset 160 = index 20) ← ADDED!
-    uint64_t int_no  = stack_anchor[20];
+    // Hardware frame (RIP, CS, RFLAGS, RSP, SS) follows immediately at index 11
+    uint64_t rip     = stack_anchor[11];
+    uint64_t cs      = stack_anchor[12];
+    uint64_t rflags  = stack_anchor[13];
+    uint64_t rsp     = stack_anchor[14];
+    uint64_t ss      = stack_anchor[15];
     if (rax == 0) {
         kprintf("[com.strawberry.core.userland] %s", (char*)rbx);
         
@@ -224,7 +219,7 @@ void idtcs(uint64_t *stack_anchor) {
         asm volatile("cli");
         
     } else if (rax == 3) {
-        spawn_user_task(rbx, (int)rcx, (char *)rdx);
+        spawn_user_task(rbx, (int)rcx, (char *)rdx, (int)r8);
         kprintf("[com.strawberry.core.userland] Spawned PID %d.\n", rcx);
         
     } else if (rax == 4) {

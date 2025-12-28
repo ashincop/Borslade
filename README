@@ -9,8 +9,8 @@ To initiate a system call, they take 3 max arguments in rbx, rcx, and rdx. The s
 3. Use the int $0x30 instruction
 4. Set your variable to RAX if it isn't listed as void after the interrupt
 
-Current System Call Signatures (copy/direct form of returntype RAX(args))
-- 0(char* rbx) / direct void printf(char* string)
+Current System Call Signatures (form of copy/direct returntype RAX(args))
+- 0(char* rbx) / direct void print(char* string)
 
 - 1(uint32_t rbx) / direct void clear_screen(uint32_t color)
 
@@ -37,4 +37,5 @@ Warning: sleep is NOT_IMPL due to hang
 - 11(int rbx, int rcx, int rdx) / direct int lseek(int fd, int offset, int whence)
 
 - 12(char* rbx) / direct int vfs_get_filesize(char* name)
+
 

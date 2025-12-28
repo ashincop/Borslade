@@ -26,249 +26,249 @@ void small_delay() {
         // just burn cycles
     }
 }
-task_t* spawn_user_task(uint64_t entry_point, int id, char *name) {
+task_t* spawn_user_task(uint64_t entry_point, int id, char *name, int debug) {
     
-    kprintf("[1] Starting spawn_user_task, entry=%p id=%d\n", entry_point, id);
+    if(debug == 1) kprintf("[1] Starting spawn_user_task, entry=%p id=%d\n", entry_point, id);
     small_delay();
     task_t* new_task = (task_t*)kmalloc(sizeof(task_t));
     
-    kprintf("[2] kmalloc returned %p\n", new_task);
+    if(debug == 1) kprintf("[2] kmalloc returned %p\n", new_task);
     small_delay();if (!new_task) return NULL;
 
     void* kernel_stack = pmm_alloc_page();
     
-    kprintf("[3] kernel_stack allocated at %p\n", kernel_stack);
+    if(debug == 1) kprintf("[3] kernel_stack allocated at %p\n", kernel_stack);
     small_delay();
     void* user_stack = pmm_alloc_page();
     
-    kprintf("[4] user_stack allocated at %p\n", user_stack);
+    if(debug == 1) kprintf("[4] user_stack allocated at %p\n", user_stack);
     small_delay();
     memset(kernel_stack, 0, 4096);
     
-    kprintf("[5] kernel_stack memset done\n");
+    if(debug == 1) kprintf("[5] kernel_stack memset done\n");
     small_delay();
     memset(user_stack, 0, 4096);
     
-    kprintf("[6] user_stack memset done\n");
+    if(debug == 1) kprintf("[6] user_stack memset done\n");
 small_delay();
     // 1. Prepare argv strings (high in user stack)
     uint64_t ustack_top = (uint64_t)user_stack + 4096;
     
-    kprintf("[7] ustack_top = %p\n", ustack_top);
+    if(debug == 1) kprintf("[7] ustack_top = %p\n", ustack_top);
     small_delay();
     char* arg_str = (char*)(ustack_top - 64);
     
-    kprintf("[8] arg_str = %p\n", arg_str);
+    if(debug == 1) kprintf("[8] arg_str = %p\n", arg_str);
     small_delay();
     if ((uint64_t)user_stack >= 0x1000000 && (uint64_t)user_stack < 0x1100000) {
         kprintf("ERROR: user_stack overlaps with TCC memory!\n");
         for(;;);
     }
     
-    kprintf("[9] overlap check passed\n");
+    if(debug == 1) kprintf("[9] overlap check passed\n");
 small_delay();
     strcpy(arg_str, name);
     
-    kprintf("[10] strcpy done\n");
+    if(debug == 1) kprintf("[10] strcpy done\n");
     small_delay();
     uint64_t* argv_array = (uint64_t*)(ustack_top - 128);
     
-    kprintf("[11] argv_array = %p\n", argv_array);
+    if(debug == 1) kprintf("[11] argv_array = %p\n", argv_array);
     small_delay();
     argv_array[0] = (uint64_t)arg_str;
     
-    kprintf("[12] argv_array[0] set\n");
+    if(debug == 1) kprintf("[12] argv_array[0] set\n");
     small_delay();
     argv_array[1] = 0;
     
-    kprintf("[13] argv_array[1] set\n");
+    if(debug == 1) kprintf("[13] argv_array[1] set\n");
     small_delay();
     uint64_t argv_ptr = (uint64_t)argv_array;
     
-    kprintf("[14] argv_ptr = %p\n", argv_ptr);
+    if(debug == 1) kprintf("[14] argv_ptr = %p\n", argv_ptr);
 small_delay();
     // 2. TCC CRT0 User Stack: [argc][argv_ptr][argv[0]][argv[1]=0]
     uint64_t tcc_rsp = (uint64_t)user_stack + 4096 - 32;
     
-    kprintf("[15] tcc_rsp = %p\n", tcc_rsp);
+    if(debug == 1) kprintf("[15] tcc_rsp = %p\n", tcc_rsp);
     small_delay();
     *(uint64_t*)tcc_rsp = 1;
     
-    kprintf("[16] argc set\n");
+    if(debug == 1) kprintf("[16] argc set\n");
     small_delay();
     *(uint64_t*)(tcc_rsp + 8) = argv_ptr;
     
-    kprintf("[17] argv ptr set\n");
+    if(debug == 1) kprintf("[17] argv ptr set\n");
     small_delay();
     *(uint64_t*)(tcc_rsp + 16) = (uint64_t)arg_str;
     
-    kprintf("[18] argv[0] set\n");
+    if(debug == 1) kprintf("[18] argv[0] set\n");
     small_delay();
     *(uint64_t*)(tcc_rsp + 24) = 0;
     
-    kprintf("[19] argv[1] set\n");
+    if(debug == 1) kprintf("[19] argv[1] set\n");
 small_delay();
     // 3. Kernel Stack Frame (160 bytes = 20 qwords)
     uint64_t frame_base = (uint64_t)kernel_stack + 4096 - 160;
     
-    kprintf("[20] frame_base = %p\n", frame_base);
+    if(debug == 1) kprintf("[20] frame_base = %p\n", frame_base);
 small_delay();
     // Software frame (offsets 0-112, indices 0-14)
     *(uint64_t*)(frame_base + 0) = 0;
     
-    kprintf("[21] rax set\n");
+    if(debug == 1) kprintf("[21] rax set\n");
     small_delay();
     *(uint64_t*)(frame_base + 8) = 0;
     
-    kprintf("[22] rbx set\n");
+    if(debug == 1) kprintf("[22] rbx set\n");
     small_delay();
     *(uint64_t*)(frame_base + 16) = 0;
     
-    kprintf("[23] rcx set\n");
+    if(debug == 1) kprintf("[23] rcx set\n");
     small_delay();
     *(uint64_t*)(frame_base + 24) = 0;
     
-    kprintf("[24] rdx set\n");
+    if(debug == 1) kprintf("[24] rdx set\n");
     small_delay();
     *(uint64_t*)(frame_base + 32) = 0;
     
-    kprintf("[25] rbp set\n");
+    if(debug == 1) kprintf("[25] rbp set\n");
     small_delay();
     *(uint64_t*)(frame_base + 40) = 1;
     
-    kprintf("[26] rdi set\n");
+    if(debug == 1) kprintf("[26] rdi set\n");
     small_delay();
     *(uint64_t*)(frame_base + 48) = argv_ptr;
     
-    kprintf("[27] rsi set\n");
+    if(debug == 1) kprintf("[27] rsi set\n");
     small_delay();
     *(uint64_t*)(frame_base + 56) = 0;
     
-    kprintf("[28] r8 set\n");
+    if(debug == 1) kprintf("[28] r8 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 64) = 0;
     
-    kprintf("[29] r9 set\n");
+    if(debug == 1) kprintf("[29] r9 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 72) = 0;
     
-    kprintf("[30] r10 set\n");
+    if(debug == 1) kprintf("[30] r10 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 80) = 0;
     
-    kprintf("[31] r11 set\n");
+    if(debug == 1) kprintf("[31] r11 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 88) = 0;
     
-    kprintf("[32] r12 set\n");
+    if(debug == 1) kprintf("[32] r12 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 96) = 0;
     
-    kprintf("[33] r13 set\n");
+    if(debug == 1) kprintf("[33] r13 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 104) = 0;
     
-    kprintf("[34] r14 set\n");
+    if(debug == 1) kprintf("[34] r14 set\n");
     small_delay();
     *(uint64_t*)(frame_base + 112) = 0;
     
-    kprintf("[35] r15 set\n");
+    if(debug == 1) kprintf("[35] r15 set\n");
 small_delay();
     // Hardware frame (offsets 120-152, indices 15-19)
     *(uint64_t*)(frame_base + 120) = entry_point;
     
-    kprintf("[36] rip set to %p\n", entry_point);
+    if(debug == 1) kprintf("[36] rip set to %p\n", entry_point);
     small_delay();
     *(uint64_t*)(frame_base + 128) = 0x1B;
     
-    kprintf("[37] cs set\n");
+    if(debug == 1) kprintf("[37] cs set\n");
     small_delay();
     *(uint64_t*)(frame_base + 136) = 0x202;
     
-    kprintf("[38] rflags set\n");
+    if(debug == 1) kprintf("[38] rflags set\n");
     small_delay();
     *(uint64_t*)(frame_base + 144) = tcc_rsp;
     
-    kprintf("[39] rsp set\n");
+    if(debug == 1) kprintf("[39] rsp set\n");
     small_delay();
     *(uint64_t*)(frame_base + 152) = 0x23;
     
-    kprintf("[40] ss set\n");
+    if(debug == 1) kprintf("[40] ss set\n");
 small_delay();
     // 4. Debug print frame
     
-    kprintf("[41] About to print task frame debug\n");
+    if(debug == 1) kprintf("[41] About to print task frame debug\n");
     small_delay();
-    kprintf("[multi] Task %d frame: RIP=%p RSP=%p (argc@%p)\n",        id, entry_point, tcc_rsp, *(uint64_t*)tcc_rsp);
+    if(debug == 1) kprintf("[multi] Task %d frame: RIP=%p RSP=%p (argc@%p)\n",        id, entry_point, tcc_rsp, *(uint64_t*)tcc_rsp);
     small_delay();
     
-            kprintf("[42] Frame debug printed\n");
+            if(debug == 1) kprintf("[42] Frame debug printed\n");
 small_delay();
     // 5. Task setup
     new_task->stack_ptr = (void*)frame_base;
     
-    kprintf("[43] stack_ptr set\n");
+    if(debug == 1) kprintf("[43] stack_ptr set\n");
     small_delay();
     new_task->id = id;
     
-    kprintf("[44] id set\n");
+    if(debug == 1) kprintf("[44] id set\n");
     small_delay();
     new_task->name = name;
     
-    kprintf("[45] name set\n");
+    if(debug == 1) kprintf("[45] name set\n");
     small_delay();
     new_task->kernel_stack_top = (uint64_t)kernel_stack + 4096;
     
-    kprintf("[46] kernel_stack_top set\n");
+    if(debug == 1) kprintf("[46] kernel_stack_top set\n");
     small_delay();
     new_task->cr3 = read_cr3();
     
-    kprintf("[47] cr3 set\n");
+    if(debug == 1) kprintf("[47] cr3 set\n");
 small_delay();
     // 6. Atomic insert to scheduler
     
-    kprintf("[48] About to disable interrupts\n");
+    if(debug == 1) kprintf("[48] About to disable interrupts\n");
     small_delay();
     {
         task_t* _cur = current_task;
         uint64_t _cur_next = _cur ? (uint64_t)_cur->next : 0;
-        kprintf("[DBG-before-cli] new_task=%p stack_ptr=%p kernel_stack_top=%p cr3=%p current_task=%p current_task->next=%p\n",
+        if(debug == 1) kprintf("[DBG-before-cli] new_task=%p stack_ptr=%p kernel_stack_top=%p cr3=%p current_task=%p current_task->next=%p\n",
                 new_task, new_task->stack_ptr, (void*)new_task->kernel_stack_top, (void*)new_task->cr3, _cur, (void*)_cur_next);
     }
     small_delay();asm volatile("cli");
     
-    kprintf("[49] Interrupts disabled\n");
+    if(debug == 1) kprintf("[49] Interrupts disabled\n");
     small_delay();
     if (current_task == NULL) {
         
-        kprintf("[50] current_task is NULL\n");
+        if(debug == 1) kprintf("[50] current_task is NULL\n");
         small_delay();current_task = new_task;
         new_task->next = new_task;
     } else {
         
-        kprintf("[51] current_task exists, linking\n");
+        if(debug == 1) kprintf("[51] current_task exists, linking\n");
         small_delay();new_task->next = current_task->next;
         
-        kprintf("[52] new_task->next set\n");
+        if(debug == 1) kprintf("[52] new_task->next set\n");
         small_delay();current_task->next = new_task;
         
-        kprintf("[53] current_task->next set\n");
+        if(debug == 1) kprintf("[53] current_task->next set\n");
         {
             task_t* _cur = current_task;
-            kprintf("[DBG-after-link] current_task=%p current_task->next=%p new_task=%p new_task->next=%p\n",
+            if(debug == 1) kprintf("[DBG-after-link] current_task=%p current_task->next=%p new_task=%p new_task->next=%p\n",
                     _cur, _cur ? _cur->next : NULL, new_task, new_task->next);
         }
     }small_delay();
     
     asm volatile("sti");
-    kprintf("[DBG-after-sti] interrupts reenabled (returning from spawn)\n");
+    if(debug == 1) kprintf("[DBG-after-sti] interrupts reenabled (returning from spawn)\n");
     
-    kprintf("[54] Interrupts enabled\n");
+    if(debug == 1) kprintf("[54] Interrupts enabled\n");
 small_delay();
     
-    kprintf("[multi] Spawned %d '%s' at 0x%p\n", id, name, entry_point);
+    if(debug == 1) kprintf("[multi] Spawned %d '%s' at 0x%p\n", id, name, entry_point);
     small_delay();
-    kprintf("[55] spawn_user_task complete!\n");
+    if(debug == 1) kprintf("[55] spawn_user_task complete!\n");
     small_delay();return new_task;
 }
 
@@ -356,8 +356,20 @@ void* read(char* name) {
     return result; 
 }
 
-void create_task(uint64_t addr, int pid, char *name) {
-    asm volatile("int $0x30" : : "a"(3), "b"(addr), "c"((uint64_t)pid), "d"(name));
+void create_task(uint64_t addr, int pid, char *name, int debug) {
+    register uint64_t r8 asm("r8") = debug;
+
+asm volatile (
+    "int $0x30"
+    :
+    : "a"(3),
+      "b"(addr),
+      "c"((uint64_t)pid),
+      "d"(name),
+      "r"(r8)       // r8 holds debug
+    : "memory"
+);
+
 }
 
 void tryit() {
@@ -373,21 +385,38 @@ void task_b_main() {
     uint8_t* check_tcc = (uint8_t*)tcc;
     kprintf("TCC Magic: %x %c %c %c\n", check_tcc[0], check_tcc[1], check_tcc[2], check_tcc[3]);
     
-    uint64_t tcc_base = 0x41000000;
-    for (uint64_t i = 0; i < (1024 * 1024); i += 4096) {
-        pmm_mark_used64(tcc_base + i);
+    // allocate 1 MiB via kmalloc syscall (syscall 7)
+    uint64_t tcc_size = 1024 * 1024;
+    uint64_t tcc_ptr = 0;
+    asm volatile (
+        "int $0x30"
+        : "=a"(tcc_ptr)
+        : "a"((uint64_t)7), "b"(tcc_size)
+        : "memory"
+    );
+    if (tcc_ptr == 0) {
+        kprintf("ERROR: kmalloc syscall(7) failed for TCC size=%d\n", (int)tcc_size);
+        for(;;);
     }
-    
+    // kmalloc returns (new_block + 1) — payload pointer after header.
+    // The actual page-aligned allocation base is at (payload - sizeof(malloc_header_t)).
+    uint64_t tcc_payload = tcc_ptr;
+    uint64_t tcc_base = tcc_payload - sizeof(malloc_header_t);
+    kprintf("KMALLOC: payload=%p raw_base=%p size=%d\n", (void*)tcc_payload, (void*)tcc_base, (int)tcc_size);
+
     uint64_t tcc_entry = load_elf_pie(tcc, tcc_base);
     kprintf("TCC PIE Loaded at %p. Entry point: %p\n", tcc_base, tcc_entry);
     uint8_t* check_entry = (uint8_t*)tcc_entry;
-kprintf("Bytes at entry %p: %x %x %x %x %x %x %x %x\n", 
+    kprintf("Bytes at entry %p: %x %x %x %x %x %x %x %x\n", 
         tcc_entry,
         check_entry[0], check_entry[1], check_entry[2], check_entry[3],
-        check_entry[4], check_entry[5], check_entry[6], check_entry[7]);    
-    
-    // Spawn TCC directly - uint64_t parameter
-    create_task(tcc_entry, 10, "tcc.sys");
+        check_entry[4], check_entry[5], check_entry[6], check_entry[7]);
+
+    // Diagnostic: dump PMM bitmap + memory near the ELF base to catch overlaps
+    pmm_debug_range(tcc_base, tcc_size);
+
+    // Spawn TCC directly - enable debug for verbose spawn tracing
+    create_task(tcc_entry, 10, "tcc.sys", 0);
     kprintf("IMAGINE");
     
     for(;;);
@@ -453,7 +482,7 @@ void init_multitasking() {
     kprintf("[multi] Kernel taskA ready at %p\n", frame_baseA);
 
     // 4. Spawn launchd user task
-    spawn_user_task((uint64_t)task_b_main, 1, "launchd.sys");
+    spawn_user_task((uint64_t)task_b_main, 1, "launchd.sys", 0);
     
     kprintf("[multi] Multitasking initialized - ready for timer interrupts!\n");
 }
