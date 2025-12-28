@@ -20,6 +20,8 @@ context_switch:
     push rcx
     push rbx
     push rax
+    sub rsp, 8     ; alignment tax
+
 
     ; 2. Save the current stack pointer
     mov [rdi], rsp
@@ -51,6 +53,8 @@ context_switch:
     pop r13
     pop r14
     pop r15
+    add rsp, 8     ; alignment tax
+
 
     ; 6. CRITICAL CHANGE: 
     ; If the new task was set up for an interrupt (iretq), we use iretq.

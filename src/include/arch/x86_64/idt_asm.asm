@@ -114,33 +114,15 @@ ISR_NOERR 29  ; (Intel reserved)
 ISR_NOERR 30  ; (Intel reserved)
 ISR_NOERR 31  ; (Intel reserved)
 idtstub:
-    ; The CPU pushed SS, RSP, RFLAGS, CS, RIP (40 bytes)
+    ; The CPU pushed SS, RSP, RFLAGS, CS, RIP (hardware frame)
     mov rbp, rsp
-    
-    ; Save registers because C might overwrite them
-    push rax
-    push rcx
-    push rdx
-    push rsi
-    push rdi
-    push r8
-    push r9
-    push r10
-    push r11
-
+    ; Save a full register set in a consistent order for the C handler
+    PUSH_ALL
+    ; Pass pointer to the saved frame (rbp) as first argument
+    mov rdi, rbp
     call idtc
-
-    ; Restore registers
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rax
-    
+    ; Restore registers in reverse order
+    POP_ALL
     pop rbp
     iretq
 global idtstubs

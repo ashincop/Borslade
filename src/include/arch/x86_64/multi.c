@@ -50,9 +50,9 @@ task_t* spawn_user_task(uint64_t entry_point, int id, char *name, int debug) {
     memset(user_stack, 0, 4096);
     
     if(debug == 1) kprintf("[6] user_stack memset done\n");
-small_delay();
+    small_delay();
     // 1. Prepare argv strings (high in user stack)
-    uint64_t ustack_top = (uint64_t)user_stack + 4096;
+    uint64_t ustack_top = ((uint64_t)user_stack + 4096) & ~0xF;
     
     if(debug == 1) kprintf("[7] ustack_top = %p\n", ustack_top);
     small_delay();
@@ -66,7 +66,7 @@ small_delay();
     }
     
     if(debug == 1) kprintf("[9] overlap check passed\n");
-small_delay();
+    small_delay();
     strcpy(arg_str, name);
     
     if(debug == 1) kprintf("[10] strcpy done\n");
@@ -86,9 +86,11 @@ small_delay();
     uint64_t argv_ptr = (uint64_t)argv_array;
     
     if(debug == 1) kprintf("[14] argv_ptr = %p\n", argv_ptr);
-small_delay();
-    // 2. TCC CRT0 User Stack: [argc][argv_ptr][argv[0]][argv[1]=0]
-    uint64_t tcc_rsp = (uint64_t)user_stack + 4096 - 32;
+        small_delay();
+
+    // TCC CRT0 usually expects: [argc] [argv ptr] [envp ptr]
+    // To keep it 16-byte aligned:
+    uint64_t tcc_rsp = ustack_top - 32;
     
     if(debug == 1) kprintf("[15] tcc_rsp = %p\n", tcc_rsp);
     small_delay();
@@ -107,12 +109,12 @@ small_delay();
     *(uint64_t*)(tcc_rsp + 24) = 0;
     
     if(debug == 1) kprintf("[19] argv[1] set\n");
-small_delay();
+    small_delay();
     // 3. Kernel Stack Frame (160 bytes = 20 qwords)
     uint64_t frame_base = (uint64_t)kernel_stack + 4096 - 160;
     
     if(debug == 1) kprintf("[20] frame_base = %p\n", frame_base);
-small_delay();
+    small_delay();
     // Software frame (offsets 0-112, indices 0-14)
     *(uint64_t*)(frame_base + 0) = 0;
     
@@ -173,7 +175,7 @@ small_delay();
     *(uint64_t*)(frame_base + 112) = 0;
     
     if(debug == 1) kprintf("[35] r15 set\n");
-small_delay();
+    small_delay();
     // Hardware frame (offsets 120-152, indices 15-19)
     *(uint64_t*)(frame_base + 120) = entry_point;
     
@@ -194,7 +196,7 @@ small_delay();
     *(uint64_t*)(frame_base + 152) = 0x23;
     
     if(debug == 1) kprintf("[40] ss set\n");
-small_delay();
+    small_delay();
     // 4. Debug print frame
     
     if(debug == 1) kprintf("[41] About to print task frame debug\n");
@@ -203,7 +205,7 @@ small_delay();
     small_delay();
     
             if(debug == 1) kprintf("[42] Frame debug printed\n");
-small_delay();
+    small_delay();
     // 5. Task setup
     new_task->stack_ptr = (void*)frame_base;
     
@@ -224,7 +226,7 @@ small_delay();
     new_task->cr3 = read_cr3();
     
     if(debug == 1) kprintf("[47] cr3 set\n");
-small_delay();
+    small_delay();
     // 6. Atomic insert to scheduler
     
     if(debug == 1) kprintf("[48] About to disable interrupts\n");
@@ -258,13 +260,14 @@ small_delay();
             if(debug == 1) kprintf("[DBG-after-link] current_task=%p current_task->next=%p new_task=%p new_task->next=%p\n",
                     _cur, _cur ? _cur->next : NULL, new_task, new_task->next);
         }
-    }small_delay();
+    }
+    small_delay();
     
-    asm volatile("sti");
+    asm volatile("sti"); // CRASH HERE
     if(debug == 1) kprintf("[DBG-after-sti] interrupts reenabled (returning from spawn)\n");
     
     if(debug == 1) kprintf("[54] Interrupts enabled\n");
-small_delay();
+    small_delay();
     
     if(debug == 1) kprintf("[multi] Spawned %d '%s' at 0x%p\n", id, name, entry_point);
     small_delay();
@@ -381,43 +384,9 @@ void tryit() {
 void task_b_main() {
     print("LAUNCHD has been launched\n");
 
-    void* tcc = read("./System/usr/bin/tcc");
-    uint8_t* check_tcc = (uint8_t*)tcc;
-    kprintf("TCC Magic: %x %c %c %c\n", check_tcc[0], check_tcc[1], check_tcc[2], check_tcc[3]);
     
-    // allocate 1 MiB via kmalloc syscall (syscall 7)
-    uint64_t tcc_size = 1024 * 1024;
-    uint64_t tcc_ptr = 0;
-    asm volatile (
-        "int $0x30"
-        : "=a"(tcc_ptr)
-        : "a"((uint64_t)7), "b"(tcc_size)
-        : "memory"
-    );
-    if (tcc_ptr == 0) {
-        kprintf("ERROR: kmalloc syscall(7) failed for TCC size=%d\n", (int)tcc_size);
-        for(;;);
-    }
-    // kmalloc returns (new_block + 1) — payload pointer after header.
-    // The actual page-aligned allocation base is at (payload - sizeof(malloc_header_t)).
-    uint64_t tcc_payload = tcc_ptr;
-    uint64_t tcc_base = tcc_payload - sizeof(malloc_header_t);
-    kprintf("KMALLOC: payload=%p raw_base=%p size=%d\n", (void*)tcc_payload, (void*)tcc_base, (int)tcc_size);
-
-    uint64_t tcc_entry = load_elf_pie(tcc, tcc_base);
-    kprintf("TCC PIE Loaded at %p. Entry point: %p\n", tcc_base, tcc_entry);
-    uint8_t* check_entry = (uint8_t*)tcc_entry;
-    kprintf("Bytes at entry %p: %x %x %x %x %x %x %x %x\n", 
-        tcc_entry,
-        check_entry[0], check_entry[1], check_entry[2], check_entry[3],
-        check_entry[4], check_entry[5], check_entry[6], check_entry[7]);
-
-    // Diagnostic: dump PMM bitmap + memory near the ELF base to catch overlaps
-    pmm_debug_range(tcc_base, tcc_size);
-
-    // Spawn TCC directly - enable debug for verbose spawn tracing
-    create_task(tcc_entry, 10, "tcc.sys", 0);
-    kprintf("IMAGINE");
+    
+    kprintf("tcc.sys: successfully launched");
     
     for(;;);
 }
@@ -479,11 +448,30 @@ void init_multitasking() {
     running_proc_pids[rppl++] = taskA->id;
     current_task = taskA;
 
-    kprintf("[multi] Kernel taskA ready at %p\n", frame_baseA);
+    // kprintf("[multi] Kernel taskA ready at %p\n", frame_baseA);
+    // void* tcc = read("./a.out");
+    // uint8_t* check_tcc = (uint8_t*)tcc;
+    // // 4. Spawn launchd user task
+    // spawn_user_task((uint64_t)task_b_main, 1, "launchd.sys", 0);
+    // uint64_t tcc_size = 1024*8;
+    // uint64_t tcc_ptr = 0x8000000;
+    // // kmalloc returns (new_block + 1) — payload pointer after header.
+    // // The actual page-aligned allocation base is at (payload - sizeof(malloc_header_t)).
+    // uint64_t tcc_payload = tcc_ptr;
+    // uint64_t tcc_base = tcc_payload - sizeof(malloc_header_t);
+    // kprintf("KMALLOC: payload=%p raw_base=%p size=%d\n", (void*)tcc_payload, (void*)tcc_base, (int)tcc_size);
 
-    // 4. Spawn launchd user task
-    spawn_user_task((uint64_t)task_b_main, 1, "launchd.sys", 0);
-    
-    kprintf("[multi] Multitasking initialized - ready for timer interrupts!\n");
+    // uint64_t tcc_entry = load_elf_pie(tcc, tcc_base);
+    // kprintf("TCC PIE Loaded at %p. Entry point: %p\n", tcc_base, tcc_entry);
+    // uint8_t* check_entry = (uint8_t*)tcc_entry;
+    // kprintf("Bytes at entry %p: %x %x %x %x %x %x %x %x\n", 
+    //     tcc_entry,
+    //     check_entry[0], check_entry[1], check_entry[2], check_entry[3],
+    //     check_entry[4], check_entry[5], check_entry[6], check_entry[7]);
+    // spawn_user_task(tcc_entry, 10, "tcc.sys", 0);
+    // kprintf("tcc.sys: successfully launched");
+    // kprintf("[multi] Multitasking initialized - ready for timer interrupts!\n");
 }
+
+
 

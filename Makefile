@@ -28,8 +28,7 @@ $(BUILD_DIR)/boot.iso: $(BUILD_DIR)/kernel.bin
 	cp $(BUILD_DIR)/kernel.bin $(ISO_DIR)/boot/kernel.bin
 	cp ./grub.cfg $(ISO_DIR)/boot/grub
 	$(CC) -fPIC -ffreestanding -fno-stack-protector -nostdlib -c hi.c -o main.o
-	$(AS) -f elf64 hi.asm -o entry.o
-	$(LD) -Ttext 0x0 --oformat binary entry.o main.o -o initrd/System/proc/sys1.bin
+	$(LD) -Ttext 0x0 main.o --oformat elf64-x86-64 -o initrd/a.out
 	cd initrd && find . | cpio -o -H newc > ../build/iso/boot/initrd.img
 	unset TMPDIR; $(GRUB_MKRESCUE) -o $(BUILD_DIR)/boot.iso $(ISO_DIR)
 
@@ -101,7 +100,8 @@ run: $(BUILD_DIR)/boot.iso
 		-cdrom $(BUILD_DIR)/boot.iso \
 		-vga std \
 		-display cocoa,show-cursor=on \
-		-monitor none
+		-monitor none \
+		-serial file:serial.log
 
 clean:
 	rm -rf $(BUILD_DIR)

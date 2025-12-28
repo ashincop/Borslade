@@ -1,6 +1,7 @@
 #include "alloc.h"
 #include <stddef.h>
 #include <drivers/screen/fb.h>
+
 #define PAGE_SIZE 4096
 #define HEAP_MAGIC 0xCAFEBABE
 #define ALIGN(size) (((size) + 7) & ~7)

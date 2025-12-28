@@ -92,31 +92,31 @@ void kprint_serial(const char* str) {
 void idtc(uint64_t *stack_anchor) {
     asm volatile("cli");
     // FIXED: Include int_no from ISR macro push (index 20)
-    uint64_t rax     = stack_anchor[ 0];
-    uint64_t rbx     = stack_anchor[ 1];
-    uint64_t rcx     = stack_anchor[ 2];
-    uint64_t rdx     = stack_anchor[ 3];
-    uint64_t rbp_    = stack_anchor[ 4];
-    uint64_t rdi     = stack_anchor[ 5];
-    uint64_t rsi     = stack_anchor[ 6];
-    uint64_t r8      = stack_anchor[ 7];
-    uint64_t r9      = stack_anchor[ 8];
-    uint64_t r10     = stack_anchor[ 9];
-    uint64_t r11     = stack_anchor[10];
-    uint64_t r12     = stack_anchor[11];
-    uint64_t r13     = stack_anchor[12];
-    uint64_t r14     = stack_anchor[13];
-    uint64_t r15     = stack_anchor[14];
+    uint64_t rax     = stack_anchor[-13];
+    uint64_t rbx     = stack_anchor[-12];
+    uint64_t rcx     = stack_anchor[-11];
+    uint64_t rdx     = stack_anchor[-10];
+    uint64_t rbp_    = stack_anchor[-9];
+    uint64_t rdi     = stack_anchor[-8];
+    uint64_t rsi     = stack_anchor[-7];
+    uint64_t r8      = stack_anchor[-6];
+    uint64_t r9      = stack_anchor[-5];
+    uint64_t r10     = stack_anchor[-4];
+    uint64_t r11     = stack_anchor[-3];
+    uint64_t r12     = stack_anchor[-2];
+    uint64_t r13     = stack_anchor[-1];
+    uint64_t r14     = stack_anchor[0];
+    uint64_t r15     = stack_anchor[1];
 
     // Hardware frame (offsets 120-152 = indices 15-19)
-    uint64_t rip     = stack_anchor[15];
-    uint64_t cs      = stack_anchor[16];
-    uint64_t rflags  = stack_anchor[17];
-    uint64_t rsp     = stack_anchor[18];
-    uint64_t ss      = stack_anchor[19];
+    uint64_t rip     = stack_anchor[2];
+    uint64_t cs      = stack_anchor[3];
+    uint64_t rflags  = stack_anchor[4];
+    uint64_t rsp     = stack_anchor[5];
+    uint64_t ss      = stack_anchor[6];
 
     // ISR frame (offset 160 = index 20) ← ADDED!
-    uint64_t int_no  = stack_anchor[20];
+    uint64_t int_no  = stack_anchor[-15];
     const char* exception_names[32] = {
     "Divide Error",           // 0
     "Debug Exception",        // 1  
@@ -149,7 +149,7 @@ void idtc(uint64_t *stack_anchor) {
     kprintf("\npanic(%d)\n", int_no);
     
     // 1. Check the Registers we pushed
-    kprintf("RAX: %x  RBX: %x  RCX: %x\n", rax, rbx, rcx);
+    kprintf("RAX: %x  RBX: %x  RCX: %x  RDX: %x  RBP: %x\n", rax, rbx, rcx, rdx, rbp_);
     kprintf("RDI: %x  RSI: %x\n", rdi, rsi);
 
 
@@ -185,27 +185,50 @@ void irq1c(uint64_t *stack_anchor) {
 void irq12c(uint64_t *stack_anchor) {
 
 }
-void idtcs(uint64_t *stack_anchor) {
-    // Registers pushed by idtstubs (in this order):
-    // rax, rbx, rcx, rdx, rbp, rdi, rsi, r8, r9, r10, r11
-    uint64_t rax     = stack_anchor[0];
-    uint64_t rbx     = stack_anchor[1];
-    uint64_t rcx     = stack_anchor[2];
-    uint64_t rdx     = stack_anchor[3];
-    uint64_t rbp_    = stack_anchor[4];
-    uint64_t rdi     = stack_anchor[5];
-    uint64_t rsi     = stack_anchor[6];
-    uint64_t r8      = stack_anchor[7];
-    uint64_t r9      = stack_anchor[8];
-    uint64_t r10     = stack_anchor[9];
-    uint64_t r11     = stack_anchor[10];
+int isdigit(char c) {
+    return c >= '0' && c <= '9';
+}
+int isalpha(char c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+int isalnum(char c) {
+    return isalpha(c) || isdigit(c);
+}
+int strcmp(const char* a, const char* b) {
+    while (*a && *b) {
+        if (*a != *b) return *a - *b;
+        a++;
+        b++;
+    }
+    return *a - *b;
+}
 
-    // Hardware frame (RIP, CS, RFLAGS, RSP, SS) follows immediately at index 11
-    uint64_t rip     = stack_anchor[11];
-    uint64_t cs      = stack_anchor[12];
-    uint64_t rflags  = stack_anchor[13];
-    uint64_t rsp     = stack_anchor[14];
-    uint64_t ss      = stack_anchor[15];
+void idtcs(uint64_t *stack_anchor) {
+    uint64_t rax     = stack_anchor[ 0];
+    uint64_t rbx     = stack_anchor[ 1];
+    uint64_t rcx     = stack_anchor[ 2];
+    uint64_t rdx     = stack_anchor[ 3];
+    uint64_t rbp_    = stack_anchor[ 4];
+    uint64_t rdi     = stack_anchor[ 5];
+    uint64_t rsi     = stack_anchor[ 6];
+    uint64_t r8      = stack_anchor[ 7];
+    uint64_t r9      = stack_anchor[ 8];
+    uint64_t r10     = stack_anchor[ 9];
+    uint64_t r11     = stack_anchor[10];
+    uint64_t r12     = stack_anchor[11];
+    uint64_t r13     = stack_anchor[12];
+    uint64_t r14     = stack_anchor[13];
+    uint64_t r15     = stack_anchor[14];
+
+    // Hardware frame (offsets 120-152 = indices 15-19)
+    uint64_t rip     = stack_anchor[15];
+    uint64_t cs      = stack_anchor[16];
+    uint64_t rflags  = stack_anchor[17];
+    uint64_t rsp     = stack_anchor[18];
+    uint64_t ss      = stack_anchor[19];
+
+    // ISR frame (offset 160 = index 20) ← ADDED!
+    uint64_t int_no  = stack_anchor[20];
     if (rax == 0) {
         kprintf("[com.strawberry.core.userland] %s", (char*)rbx);
         
@@ -258,6 +281,14 @@ void idtcs(uint64_t *stack_anchor) {
         char* user_filename = (char*)rbx;
 
         asm volatile ("" : : "a"((uint64_t)vfs_get_filesize(user_filename)) :);
+    } else if (rax == 13) {
+        asm volatile ("" : : "a"((uint64_t)isdigit((char)rbx)));
+    } else if (rax == 14) {
+        asm volatile ("" : : "a"((uint64_t)isalpha((char)rbx)));
+    } else if (rax == 15) {
+        asm volatile ("" : : "a"((uint64_t)isalnum((char)rbx)));
+    } else if (rax == 16) {
+        asm volatile ("" : : "a"((uint64_t)strcmp((char*)rbx, (char*)rcx)));
     }
 }
 void init_timer(uint32_t frequency) {

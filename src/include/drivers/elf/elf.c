@@ -71,12 +71,6 @@ uint64_t load_elf_pie(void* elf_data, uint64_t preferred_base) {
             kprintf("PT_LOAD[%d]: VA=0x%p-0x%p (pages=0x%p-0x%p)\n", 
                    i, vaddr_start, vaddr_end, page_start, page_end);
             
-            // Mark physical frames used (convert VA → frame numbers)
-            for (uint64_t page = page_start; page < page_end; page += PAGE_SIZE) {
-                uint64_t frame = page >> PFN_SHIFT;
-                pmm_mark_used(page);
-            }
-            
             // Clear memory (p_memsz covers BSS/padding)
             memset((void*)vaddr_start, 0, phdr->p_memsz);
             
