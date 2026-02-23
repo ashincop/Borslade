@@ -1,1 +1,15 @@
+# .gitignore
 build/
+*.iso
+*.o
+*.bin
+.DS_Store
+./tbcc
+./userland
+./newlib_dist
+./newlib-cygwin
+./strawlib
+./build-newlib
+./network.pcap
+./packets.pcap
+./OVMF_VARS.fd

@@ -39,3 +39,4 @@ Warning: sleep is NOT_IMPL due to hang
 - 12(char* rbx) / direct int vfs_get_filesize(char* name)
 
 
+rest isn't documented yet (hopefully by tommorow lol!)
