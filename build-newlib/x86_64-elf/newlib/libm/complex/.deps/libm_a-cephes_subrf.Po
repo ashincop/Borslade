@@ -1,0 +1,38 @@
+libm/complex/libm_a-cephes_subrf.o: \
+ ../../../newlib-cygwin/newlib/libm/complex/cephes_subrf.c \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/complex.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h \
+ _newlib_version.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/math.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/reent.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h \
+ newlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/lock.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/assert.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h \
+ ../../../newlib-cygwin/newlib/libm/complex/cephes_subrf.h
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/complex.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h:
+_newlib_version.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/math.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/reent.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h:
+newlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/lock.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/assert.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h:
+../../../newlib-cygwin/newlib/libm/complex/cephes_subrf.h:

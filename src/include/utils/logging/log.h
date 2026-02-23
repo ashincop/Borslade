@@ -8,4 +8,4 @@
 #define O_BUG 4
 #define O_ALL 5
 
-void log(const char* host, int type, const char* fmt, ...);
+void log(const char *host, int type, const char *fmt, ...);

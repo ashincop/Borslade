@@ -1,0 +1,10 @@
+SortIncludes: false
+BasedOnStyle: LLVM
+IndentWidth: 8
+UseTab: Always
+BreakBeforeBraces: Linux
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: false
+# This kills your stray returns/enters
+MaxEmptyLinesToKeep: 1
+ColumnLimit: 80

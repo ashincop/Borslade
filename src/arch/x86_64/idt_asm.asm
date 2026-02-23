@@ -69,6 +69,7 @@ io_wait:
 %macro ISR_NOERR 1
 global isr%1
 isr%1:
+    push 0
     push %1          ; int_no
     jmp idtstub
 %endmacro
@@ -115,24 +116,6 @@ ISR_NOERR 30  ; (Intel reserved)
 ISR_NOERR 31  ; (Intel reserved)
 idtstub:
     ; The CPU pushed SS, RSP, RFLAGS, CS, RIP (hardware frame)
-    mov rbp, rsp
-    ; Save a full register set in a consistent order for the C handler
-    PUSH_ALL
-    ; Pass pointer to the saved frame (rbp) as first argument
-    mov rdi, rbp
-    call idtc
-    ; Restore registers in reverse order
-    POP_ALL
-    pop rbp
-    iretq
-global idtstubs
-extern idtcs
-idtstubs:
-    push r11
-    push r10
-
-; NASM helper macros to keep stubs consistent
-%macro PUSH_ALL 0
     push r15
     push r14
     push r13
@@ -148,9 +131,9 @@ idtstubs:
     push rcx
     push rbx
     push rax
-%endmacro
-
-%macro POP_ALL 0
+    ; Pass pointer to the saved frame (rbp) as first argument
+    mov rdi, rsp
+    call idtc
     pop rax
     pop rbx
     pop rcx
@@ -165,8 +148,13 @@ idtstubs:
     pop r12
     pop r13
     pop r14
-    pop r15
-%endmacro
+
+    iretq
+global idtstubs
+extern idtcs
+idtstubs:
+    push r11
+    push r10
     push r9
     push r8
     push rsi

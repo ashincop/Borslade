@@ -83,29 +83,11 @@ void uacpi_kernel_deinitialize(void);
 /*
  * Open a PCI device at 'address' for reading & writing.
  *
- * Note that this must be able to open any arbitrary PCI device, not just those
- * detected during kernel PCI enumeration, since the following pattern is
- * relatively common in AML firmware:
- *    Device (THC0)
- *    {
- *        // Device at 00:10.06
- *        Name (_ADR, 0x00100006)  // _ADR: Address
- *
- *        OperationRegion (THCR, PCI_Config, Zero, 0x0100)
- *        Field (THCR, ByteAcc, NoLock, Preserve)
- *        {
- *            // Vendor ID field in the PCI configuration space
- *            VDID,   32
- *        }
- *
- *        // Check if the device at 00:10.06 actually exists, that is reading
- *        // from its configuration space returns something other than 0xFFs.
- *        If ((VDID != 0xFFFFFFFF))
- *        {
- *            // Actually create the rest of the device's body if it's present
- *            // in the system, otherwise skip it.
- *        }
- *    }
+ * The device at 'address' might not actually exist on the system, in this case
+ * the api is allowed to return UACPI_STATUS_NOT_FOUND to indicate that, this
+ * error is handled gracefully by creating a dummy device internally that always
+ * returns 0xFF on reads and is no-op for writes. This is to support a common
+ * pattern in AML that probes for 0xFF reads to detect whether a device exists.
  *
  * The handle returned via 'out_handle' is used to perform IO on the
  * configuration space of the device.
@@ -245,6 +227,23 @@ void uacpi_kernel_free_event(uacpi_handle);
  * The returned thread id cannot be UACPI_THREAD_ID_NONE.
  */
 uacpi_thread_id uacpi_kernel_get_thread_id(void);
+
+/*
+ * Disable interrupts and return an kernel-defined value representing the
+ * "before" state. This value is used in the subsequent call to restore the
+ * prior state.
+ *
+ * Note that this is talking about ALL interrupts on the current CPU, not just
+ * those installed by uACPI. This is typically achieved by executing the 'cli'
+ * instruction on x86, 'msr daifset, #3' on aarch64 etc.
+ */
+uacpi_interrupt_state uacpi_kernel_disable_interrupts(void);
+
+/*
+ * Restore the state of the interrupt flags to the kernel-defined value provided
+ * in 'state'.
+ */
+void uacpi_kernel_restore_interrupts(uacpi_interrupt_state state);
 
 /*
  * Try to acquire the mutex with a millisecond timeout.

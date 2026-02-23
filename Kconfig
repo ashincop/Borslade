@@ -1,0 +1,25 @@
+mainmenu "Borslade/Tailwind Configuration"
+
+menu "Memory Configuration"
+    choice
+        prompt "Paging System"
+        default IDENTITY_MAP
+
+        config IDENTITY_MAP
+            bool "Identity-mapped"
+    endchoice
+
+    config ALIGNED_ALLOC
+        bool "Aligned Allocation"
+        default y
+endmenu
+
+menu "Kernel Type"
+    config VERBOSE
+        bool "Verbose Kernel"
+        default y
+
+    config PMM_VERBOSE
+        bool "PMM Verbose (Very Noisy)"
+        default n
+endmenu

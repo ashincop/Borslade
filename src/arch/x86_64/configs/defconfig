@@ -1,0 +1,16 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# Borslade/Tailwind Configuration
+#
+
+#
+# Memory Configuration
+#
+CONFIG_CONFIG_IDENTITY_MAP=y
+CONFIG_CONFIG_ALIGNED_ALLOC=y
+
+#
+# Kernel Type
+#
+CONFIG_CONFIG_VERBOSE=n
+# CONFIG_CONFIG_PMM_VERBOSE is not set

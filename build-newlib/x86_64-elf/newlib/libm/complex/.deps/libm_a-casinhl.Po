@@ -1,0 +1,14 @@
+libm/complex/libm_a-casinhl.o: \
+ ../../../newlib-cygwin/newlib/libm/complex/casinhl.c \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/complex.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h \
+ _newlib_version.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/complex.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h:
+_newlib_version.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h:

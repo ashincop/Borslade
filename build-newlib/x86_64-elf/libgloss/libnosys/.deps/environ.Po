@@ -1,0 +1,1 @@
+libnosys/environ.o: ../../../newlib-cygwin/libgloss/libnosys/environ.c

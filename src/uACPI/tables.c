@@ -19,6 +19,12 @@ static uacpi_table_installation_handler installation_handler;
 
 static uacpi_handle table_mutex;
 
+uacpi_bool uacpi_table_subsystem_available(void)
+{
+    return early_table_access ||
+        g_uacpi_rt_ctx.init_level >= UACPI_INIT_LEVEL_SUBSYSTEM_INITIALIZED;
+}
+
 #define ENSURE_TABLES_ONLINE()                         \
     do {                                               \
         if (!early_table_access)                       \
@@ -28,6 +34,11 @@ static uacpi_handle table_mutex;
     } while (0)
 
 #else
+
+uacpi_bool uacpi_table_subsystem_available(void)
+{
+    return early_table_access;
+}
 
 /*
  * Use a dummy function instead of a macro to prevent the following error:
@@ -201,6 +212,7 @@ uacpi_status uacpi_setup_early_table_access(
 )
 {
     uacpi_status ret;
+    uacpi_virt_addr buffer_addr, aligned_buffer_addr;
 
 #ifndef UACPI_BAREBONES_MODE
     UACPI_ENSURE_INIT_LEVEL_IS(UACPI_INIT_LEVEL_EARLY);
@@ -208,10 +220,27 @@ uacpi_status uacpi_setup_early_table_access(
     if (uacpi_unlikely(early_table_access))
         return UACPI_STATUS_INIT_LEVEL_MISMATCH;
 
+    uacpi_logger_initialize();
+
+    buffer_addr = UACPI_PTR_TO_VIRT_ADDR(temporary_buffer);
+    aligned_buffer_addr = UACPI_ALIGN_UP(
+        buffer_addr, UACPI_POINTER_SIZE, uacpi_virt_addr
+    );
+    if (buffer_addr != aligned_buffer_addr) {
+        uacpi_size stripped_bytes;
+
+        stripped_bytes = aligned_buffer_addr - buffer_addr;
+        uacpi_warn(
+            "fixed up misaligned early tables buffer (%zu bytes stripped)\n",
+            stripped_bytes
+        );
+
+        buffer_size -= UACPI_MIN(stripped_bytes, buffer_size);
+        temporary_buffer = UACPI_VIRT_ADDR_TO_PTR(aligned_buffer_addr);
+    }
+
     if (uacpi_unlikely(buffer_size < sizeof(struct uacpi_installed_table)))
         return UACPI_STATUS_INVALID_ARGUMENT;
-
-    uacpi_logger_initialize();
 
     tables.dynamic_storage = temporary_buffer;
     tables.dynamic_capacity = buffer_size / sizeof(struct uacpi_installed_table);
@@ -1339,7 +1368,7 @@ static uacpi_status initialize_fadt(const void *virt)
 
     uacpi_memcpy(fadt, hdr, UACPI_MIN(sizeof(*fadt), hdr->length));
 
-#if !defined(UACPI_REDUCED_HARDWARE) && !defined(UACPI_BAREBONES_MODE)
+#ifndef UACPI_REDUCED_HARDWARE
     g_uacpi_rt_ctx.is_hardware_reduced = fadt->flags & ACPI_HW_REDUCED_ACPI;
 #endif
 

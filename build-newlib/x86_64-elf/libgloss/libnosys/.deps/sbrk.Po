@@ -1,0 +1,4 @@
+libnosys/sbrk.o: ../../../newlib-cygwin/libgloss/libnosys/sbrk.c config.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_syslist.h
+config.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_syslist.h:

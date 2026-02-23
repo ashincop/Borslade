@@ -1,0 +1,36 @@
+libm/ld80/libm_a-invtrig.o: \
+ ../../../newlib-cygwin/newlib/libm/ld80/invtrig.c \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h \
+ _newlib_version.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h \
+ ../../../newlib-cygwin/newlib/libm/ld80/invtrig.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/float.h \
+ ../../../newlib-cygwin/newlib/libm/ld80/../ld/fpmath.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/endian.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h \
+ newlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/endian.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_endian.h \
+ /Users/adam/Documents/Borslade/build-newlib/x86_64-elf/newlib/targ-include/machine/_fpmath.h
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h:
+_newlib_version.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h:
+../../../newlib-cygwin/newlib/libm/ld80/invtrig.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/float.h:
+../../../newlib-cygwin/newlib/libm/ld80/../ld/fpmath.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/endian.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h:
+newlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/endian.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_endian.h:
+/Users/adam/Documents/Borslade/build-newlib/x86_64-elf/newlib/targ-include/machine/_fpmath.h:

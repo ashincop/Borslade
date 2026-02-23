@@ -1,0 +1,76 @@
+libc/stdlib/libc_a-strtoumax.o: \
+ ../../../newlib-cygwin/newlib/libc/stdlib/strtoumax.c \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h \
+ _newlib_version.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/ctype.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h \
+ newlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_locale.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/errno.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/errno.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/reent.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/lock.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/assert.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/stdlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/stdlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/alloca.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/inttypes.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_intsup.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/stdint.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_stdint.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/reent.h \
+ ../../../newlib-cygwin/newlib/libc/stdlib/../locale/setlocale.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/limits.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/syslimits.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/limits.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/string.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/strings.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/string.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/wchar.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stdarg.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/locale.h
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h:
+_newlib_version.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/ctype.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h:
+newlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_locale.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/errno.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/errno.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/reent.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/lock.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/assert.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/stdlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/stdlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/alloca.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/inttypes.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_intsup.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/stdint.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_stdint.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/reent.h:
+../../../newlib-cygwin/newlib/libc/stdlib/../locale/setlocale.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/limits.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/syslimits.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/limits.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/string.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/strings.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/string.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/wchar.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stdarg.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/locale.h:

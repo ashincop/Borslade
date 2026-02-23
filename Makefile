@@ -13,13 +13,21 @@ LDFLAGS = -n -T linker.ld
 BUILD_DIR = build
 ISO_DIR = $(BUILD_DIR)/iso
 SRC_DIR = src
-OBJ = $(BUILD_DIR)/boot.o $(BUILD_DIR)/gdt_asm.o $(BUILD_DIR)/gdt.o $(BUILD_DIR)/kstart.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/idt_asm.o $(BUILD_DIR)/fb.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/multi_asm.o $(BUILD_DIR)/multi.o $(BUILD_DIR)/alloc.o $(BUILD_DIR)/vfs.o $(BUILD_DIR)/elf.o
+
+# --- Find all sources ---
+C_SRCS = $(shell find $(SRC_DIR) -name '*.c')
+ASM_SRCS = $(shell find $(SRC_DIR) -name '*.asm')
+
+# --- Convert sources to object files ---
+OBJ = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SRCS)) \
+      $(patsubst $(SRC_DIR)/%.asm,$(BUILD_DIR)/%.o,$(ASM_SRCS))
 
 # --- Targets ---
 all: $(BUILD_DIR)/boot.iso
 
 # Link the Kernel
-$(BUILD_DIR)/kernel.bin: $(OBJ)
+$(BUILD_DIR)/kernel.bin: $(OBJ) genconfig
+	@mkdir -p $(BUILD_DIR)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ)
 
 # Build the ISO
@@ -27,70 +35,38 @@ $(BUILD_DIR)/boot.iso: $(BUILD_DIR)/kernel.bin
 	@mkdir -p $(ISO_DIR)/boot/grub
 	cp $(BUILD_DIR)/kernel.bin $(ISO_DIR)/boot/kernel.bin
 	cp ./grub.cfg $(ISO_DIR)/boot/grub
-	$(CC) -fPIC -ffreestanding -fno-stack-protector -nostdlib -c hi.c -o main.o
-	$(LD) -Ttext 0x0 main.o --oformat elf64-x86-64 -o initrd/a.out
-	cd initrd && find . | cpio -o -H newc > ../build/iso/boot/initrd.img
-	unset TMPDIR; $(GRUB_MKRESCUE) -o $(BUILD_DIR)/boot.iso $(ISO_DIR)
+	find initrd | cpio -o -H newc > $(ISO_DIR)/boot/initrd.img
+	@$(GRUB_MKRESCUE) -o $@ $(ISO_DIR)
 
 # --- Compilation Rules ---
-$(BUILD_DIR)/%.o: src/boot/%.asm
-	@mkdir -p $(BUILD_DIR)
-	$(AS) $(ASFLAGS) $< -o $@
+# Compile C
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	@echo "CC      $<"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/gdt_asm.o: src/include/arch/x86_64/gdt_asm.asm
-	@mkdir -p $(BUILD_DIR)
-	$(AS) $(ASFLAGS) $< -o $@
+# Compile ASM
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
+	@mkdir -p $(dir $@)
+	@echo "AS      $<"
+	@$(AS) $(ASFLAGS) $< -o $@
+menuconfig:
+	kconfig-mconf Kconfig
+genconfig:
+	mkdir -p include/generated include/config
+	KCONFIG_AUTOHEADER=src/include/config.h kconfig-conf --silentoldconfig Kconfig
+alldefconfig:
+	mkdir -p include/generated include/config
+	kconfig-conf --alldefconfig Kconfig
+defconfig:
+	mkdir -p include/generated include/config
+	KBUILD_DEFCONFIG=arch/x86_64/configs/borslade_defconfig kconfig-conf --defconfig Kconfig
+savedefconfig:
+	kconfig-conf --savedefconfig=defconfig Kconfig
 
-$(BUILD_DIR)/idt_asm.o: src/include/arch/x86_64/idt_asm.asm
-	@mkdir -p $(BUILD_DIR)
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD_DIR)/multi_asm.o: src/include/arch/x86_64/multi_asm.asm
-	@mkdir -p $(BUILD_DIR)
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD_DIR)/gdt.o: src/include/arch/x86_64/gdt.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/idt.o: src/include/arch/x86_64/idt.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/multi.o: src/include/arch/x86_64/multi.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/alloc.o: src/include/arch/x86_64/alloc.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/kstart.o: src/kernel/kstart.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/boot.o: src/boot/boot.asm
-	@mkdir -p $(BUILD_DIR)
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD_DIR)/fb.o: src/include/drivers/screen/fb.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/elf.o: src/include/drivers/elf/elf.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/vfs.o: src/include/drivers/storage/vfs/vfs.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-	
-$(BUILD_DIR)/keyboard.o: src/include/drivers/keyboard/keyboard.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-# Launch QEMU (The macOS-safe version)
+# Launch QEMU
 run: $(BUILD_DIR)/boot.iso
-	@# Force clear the environment for this command to bypass the crash
+	cp ../../OVMF_VARS.fd ./
 	unset TMPDIR; qemu-system-x86_64 \
 		-machine q35,accel=hvf \
 		-cpu host \
@@ -101,7 +77,9 @@ run: $(BUILD_DIR)/boot.iso
 		-vga std \
 		-display cocoa,show-cursor=on \
 		-monitor none \
-		-serial file:serial.log
+		-netdev user,id=net0,hostfwd=tcp::1234-:1234 \
+        -device rtl8139,netdev=net0 \
+        -object filter-dump,id=dump0,netdev=net0,file=packets.pcap
 
 clean:
 	rm -rf $(BUILD_DIR)

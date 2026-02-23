@@ -5,8 +5,8 @@
 #include <uacpi/kernel_api.h>
 #include <uacpi/namespace.h>
 
-#define UACPI_MAJOR 3
-#define UACPI_MINOR 2
+#define UACPI_MAJOR 4
+#define UACPI_MINOR 0
 #define UACPI_PATCH 0
 
 #ifdef UACPI_REDUCED_HARDWARE
@@ -45,6 +45,10 @@ extern "C" {
  *   uacpi_kernel_alloc() after the call to uacpi_initialize() and can therefore
  *   be reclaimed by the kernel.
  *
+ * The 'temporary_buffer' is expected to be aligned on the native pointer size
+ * boundary (4 on a 32-bit system, 8 on a 64-bit system), although any
+ * misalignment is handled gracefully and does not result in an error.
+ *
  * The approximate overhead per table is 56 bytes, so a buffer of 4096 bytes
  * yields about 73 tables in terms of capacity. uACPI also has an internal
  * static buffer for tables, "UACPI_STATIC_TABLE_ARRAY_LEN", which is configured
@@ -56,6 +60,13 @@ extern "C" {
 uacpi_status uacpi_setup_early_table_access(
     void *temporary_buffer, uacpi_size buffer_size
 );
+
+/*
+ * Returns UACPI_TRUE if the table subsystem is available for use by the kernel.
+ * This happens after a successful call to either uacpi_initialize(...) or
+ * uacpi_setup_early_table_access(...).
+ */
+uacpi_bool uacpi_table_subsystem_available(void);
 
 /*
  * Bad table checksum should be considered a fatal error
@@ -94,6 +105,15 @@ uacpi_status uacpi_setup_early_table_access(
  * hosts are able to handle at early init.
  */
 #define UACPI_FLAG_PROACTIVE_TBL_CSUM (1ull << 5)
+
+/*
+ * Returns UACPI_TRUE via 'out_value' if the current platform is reduced ACPI
+ * hardware, UACPI_FALSE otherwise.
+ *
+ * This getter becomes available along with the table subsystem, use
+ * uacpi_table_subsystem_available() to check.
+ */
+uacpi_status uacpi_is_platform_reduced_hardware(uacpi_bool *out_value);
 
 #ifndef UACPI_BAREBONES_MODE
 

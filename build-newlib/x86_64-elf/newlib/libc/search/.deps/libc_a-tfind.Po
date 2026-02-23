@@ -1,0 +1,66 @@
+libc/search/libc_a-tfind.o: \
+ ../../../newlib-cygwin/newlib/libc/search/tfind.c \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h \
+ _newlib_version.h \
+ /usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/assert.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h \
+ newlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/stdlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/reent.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/lock.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/stdlib.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/alloca.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/search.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ansi.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/types.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_stdint.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/endian.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_endian.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/select.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_sigset.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_timeval.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/timespec.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_timespec.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_pthreadtypes.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/sched.h \
+ /Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/types.h
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/cdefs.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_default_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/features.h:
+_newlib_version.h:
+/usr/local/Cellar/x86_64-elf-gcc/15.2.0/lib/gcc/x86_64-elf/15.2.0/include/stddef.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/assert.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h:
+newlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/config.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ieeefp.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/stdlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/reent.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/_ansi.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/lock.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/stdlib.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/alloca.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/search.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/ansi.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/types.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_stdint.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/endian.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/_endian.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/select.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_sigset.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_timeval.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/timespec.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_timespec.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/_pthreadtypes.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/sys/sched.h:
+/Users/adam/Documents/Borslade/newlib-cygwin/newlib/libc/include/machine/types.h:

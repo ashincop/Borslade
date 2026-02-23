@@ -1,0 +1,2 @@
+libc/signal/libc_a-raise.o: \
+ ../../../newlib-cygwin/newlib/libc/signal/raise.c

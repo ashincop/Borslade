@@ -1,0 +1,4 @@
+libc/machine/x86_64/libc_a-setjmp.o: \
+ ../../../newlib-cygwin/newlib/libc/machine/x86_64/setjmp.S \
+ ../../../newlib-cygwin/newlib/libc/machine/x86_64/x86_64mach.h
+../../../newlib-cygwin/newlib/libc/machine/x86_64/x86_64mach.h:
