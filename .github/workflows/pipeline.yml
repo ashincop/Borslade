@@ -1,0 +1,29 @@
+name: Borslade Kernel CI
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git curl qemu-system python3-pip python3-venv
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          /home/linuxbrew/.linuxbrew/bin/brew install x86_64-elf-gcc x86_64-elf-binutils px4/px4/kconfig-frontends
+
+      - name: Generate Config
+        run: |
+          make alldefconfig
+
+      - name: Compile Kernel
+        run: make
+
+      - name: QEMU Headless Test
+        run: |
+          # Run QEMU without a window (-display none) 
+          # Exit after 10 seconds or look for a "Success" string in serial output
+          timeout 10s qemu-system-x86_64 -kernel build/kernel.bin -display none -serial stdio | grep "Borslade Booted"
