@@ -66,19 +66,15 @@ savedefconfig:
 
 # Launch QEMU
 run: $(BUILD_DIR)/boot.iso
-	cp ../../OVMF_VARS.fd ./
+	cp immu/OVMF_VARS.fd ./
 	unset TMPDIR; qemu-system-x86_64 \
 		-machine q35,accel=hvf \
 		-cpu host \
 		-m 8G \
-		-drive if=pflash,format=raw,unit=0,file=/usr/local/share/qemu/edk2-x86_64-code.fd,readonly=on \
+		-drive if=pflash,format=raw,unit=0,file=immu/OVMF_CODE.fd,readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd \
 		-cdrom $(BUILD_DIR)/boot.iso \
 		-vga std \
-		-display cocoa,show-cursor=on \
-		-monitor none \
-		-netdev user,id=net0,hostfwd=tcp::1234-:1234 \
-        -device rtl8139,netdev=net0 \
         -object filter-dump,id=dump0,netdev=net0,file=packets.pcap
 
 clean:
