@@ -75,7 +75,6 @@ run: $(BUILD_DIR)/boot.iso
 		-drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd \
 		-cdrom $(BUILD_DIR)/boot.iso \
 		-vga std \
-        -object filter-dump,id=dump0,netdev=net0,file=packets.pcap
 
 clean:
 	rm -rf $(BUILD_DIR)
