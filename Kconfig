@@ -12,6 +12,14 @@ menu "Memory Configuration"
     config ALIGNED_ALLOC
         bool "Aligned Allocation"
         default y
+
+    config FALLBACK_PCIE_ECAM
+        hex "Fallback PCIe ECAM"
+        default 0xE0000000
+
+    config HEAP_SIZE
+        hex "Kernel Heap Size in MB"
+        default 0x80
 endmenu
 
 menu "Kernel Type"

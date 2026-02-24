@@ -297,22 +297,13 @@ static inline int interrupts_enabled()
 }
 void sleep(uint32_t ms)
 {
-	int wenabled = 0;
-	if (!interrupts_enabled()) {
-		wenabled = 0;
-		asm("sti");
-	} else {
-		wenabled = 1;
-	}
 	uint32_t end_at = ticks + ms;
 
 	while (ticks < end_at) {
 		while (ticks < end_at) {
-			__asm__ volatile("pause" ::: "memory");
+		
 		}
 	}
-	if (!wenabled)
-		asm("cli");
 }
 char sc_to_char(uint8_t key)
 {

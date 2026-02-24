@@ -183,7 +183,7 @@ idtstubs:
 global irq0
 extern current_task
 extern schedule_preemptive
-
+extern irq0c
 global irq0
 irq0:
     ; --- 1. Save Task A's State ---
@@ -202,7 +202,7 @@ irq0:
     push rcx
     push rbx
     push rax
-
+    call irq0c
     ; --- 2. Setup RBP Frame and Argument ---
     mov rbp, rsp        ; RBP points to the saved register struct
     mov rdi, rbp        ; RDI = first argument for schedule_preemptive
@@ -214,6 +214,7 @@ irq0:
     ; --- 4. Call the C Scheduler ---
     ; This function will swap the 'current_task' pointer to Task B
     call schedule_preemptive
+    
 
     ; --- 5. Switch to Task B's Stack ---
     mov rax, [current_task]

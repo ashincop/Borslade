@@ -15,6 +15,8 @@
 #include <uacpi/uacpi.h>
 #include <utils/logging/log.h>
 #include <utils/misc/inline.h>
+#include <config.h>
+#include <stdarg.h>
 typedef struct {
     uint64_t available_ram;     // Type 1
     uint64_t reserved_mem;      // Type 2
@@ -85,7 +87,7 @@ mem_summary_t detect_memory_stats(void *multiboot_info_ptr) {
 
 #define host "com.strawberry.kernel.core"
 
-uintptr_t g_ecam_base = 0xE0000000;
+uintptr_t g_ecam_base = CONFIG_FALLBACK_PCIE_ECAM;
 
 // A simple square wave buffer (must be in physical memory)
 static uint16_t beep_samples[1024] __attribute__((aligned(4)));
@@ -217,15 +219,34 @@ void uacpi_level2_dependent()
 	int ret = uacpi_table_find_by_signature("APIC", &madtTbl);
 	kprintf("APIC AT %x\n", madtTbl.ptr);
 }
-
+void late_boot_panic(const char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	vkprintf(fmt, args);
+	for (int i=10; i==0; i--) {
+		kprintf("Rebooting in %d seconds..", i);
+		sleep(1000);
+	}
+	uacpi_reboot();
+	for(;;);
+	va_end(args);
+	
+}
 void start_kernel(uint64_t mbi_addr)
 {
 	g_mbi_ptr = mbi_addr;
 	init_gop(mbi_addr);
 	init_serial();
     mem_summary_t summary = detect_memory_stats((void*)mbi_addr);
-    kprintf("Booting with %dGB of RAM\n", summary.available_ram+summary.reserved_mem+summary.acpi_reclaimable >> 30);
-	init_alloc(summary.available_ram/4, mbi_addr);
+	if (CONFIG_HEAP_SIZE<128) {
+		kprintf("Error encountered in early boot: Kernel requires at least 128MB of heap, got %dMB instead. halting...\n", CONFIG_HEAP_SIZE);
+		for(;;);
+	} else if (CONFIG_HEAP_SIZE>1024*1024*1024) {
+		kprintf("Error encountered in early boot: Heap size larger than 1GB, can interfere with identity-mapped architecture, got %dGB instead. halting...", CONFIG_HEAP_SIZE/1024);
+		for(;;);
+	}
+    kprintf("Booting with %dGB of RAM, %dMB of heap\n", summary.available_ram+summary.reserved_mem+summary.acpi_reclaimable >> 30, CONFIG_HEAP_SIZE);
+	init_alloc(CONFIG_HEAP_SIZE*1024*1024, mbi_addr);
 	log(host, O_OKAY, "allocation initialized.\n");
 	uacpi_status st = uacpi_initialize(0);
 	if (st != UACPI_STATUS_OK) {
@@ -256,6 +277,7 @@ void start_kernel(uint64_t mbi_addr)
 	enable_sse();
 	init_vfs(mbi_addr);
 	list_all_pci_devices();
+	late_boot_panic("op we died!\n");
 	__asm__ volatile("cli");
 	init_multitasking();
 	__asm__ volatile("sti");
