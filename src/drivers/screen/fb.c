@@ -2576,6 +2576,7 @@ void vkprintf(const char *fmt, va_list args)
 		case 'd': {
 			int val = va_arg(args, int);
 			kprint_n((uint64_t)val, 10);
+			write_serial_n(val, 10);
 			break;
 		}
 
